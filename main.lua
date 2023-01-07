@@ -1,14 +1,14 @@
 function love.load()
-	player = Worm:new()
-	player:load(100,100)
+	scene = City:new()
+	scene:load()
 end
 
 function love.update(dt)
-	player:update(dt)
+	scene:update(dt)
 end
 
 function love.draw()
-	player:draw()
+	scene:draw()
 end
 
 --[[
@@ -92,16 +92,16 @@ end
 Worm = {
 	x = 0,
 	y = 0,
-	w = 120,
-	h = 400,
+	w = 160,
+	h = 480,
 	
-	segCount = 20,
+	segCount = 24,
 	
 	dirx = 0,
 	diry = 0,
 	
 	--ground stuff
-	speed = 720,
+	speed = 960,
 	accel = 0.6,
 	decel = 0.8,
 	
@@ -127,7 +127,7 @@ function Worm:load(x,y)
 	self.x = x
 	self.y = y
 	for z = 1,self.segCount-1 do
-		table.insert(self.points,Points:new(x,y+z*self.h/self.segCount,false,self.w/2*(self.segCount-z)/(self.segCount)))
+		table.insert(self.points,Points:new(x,y+z*self.h/self.segCount,false,self.w/2*((self.segCount-z)/(self.segCount))^0.8))
 	end
 	for z = 2,#self.points do
 		table.insert(self.sticks,Sticks:new(self.points[z-1],self.points[z],self.h/self.segCount))
@@ -140,79 +140,85 @@ function Worm:update(dt)
 end
 
 function Worm:move(dt)
-	local dirx = 0
-	local diry = 0
-	if love.keyboard.isDown("right","d") then
-		dirx = dirx + 1
-	end
-	if love.keyboard.isDown("left","a") then
-		dirx = dirx - 1
-	end
-	if love.keyboard.isDown("down","s") then
-		diry = diry + 1
-	end
-	if love.keyboard.isDown("up","w") then
-		diry = diry - 1
-	end
-	local movex = false
-	local movey = false
-	if dirx > 0 then
-		if self.dirx + dt / self.accel * self.speed < self.speed * dirx then
-			self.dirx = self.dirx + dt / self.accel * self.speed
-			movex = true
-			if self.dirx > self.speed * dirx then
-				self.dirx = self.speed * dirx
+	if self.y > scene.h then
+		self.diry = self.diry - scene.grav*dt*4
+	elseif self.y < scene.y then
+		self.diry = self.diry + scene.grav*dt
+	else
+		local dirx = 0
+		local diry = 0
+		if love.keyboard.isDown("right","d") then
+			dirx = dirx + 1
+		end
+		if love.keyboard.isDown("left","a") then
+			dirx = dirx - 1
+		end
+		if love.keyboard.isDown("down","s") then
+			diry = diry + 1
+		end
+		if love.keyboard.isDown("up","w") then
+			diry = diry - 1
+		end
+		local movex = false
+		local movey = false
+		if dirx > 0 then
+			if self.dirx + dt / self.accel * self.speed < self.speed * dirx then
+				self.dirx = self.dirx + dt / self.accel * self.speed
+				movex = true
+				if self.dirx > self.speed * dirx then
+					self.dirx = self.speed * dirx
+				end
+			end
+		elseif dirx < 0 then
+			if self.dirx - dt / self.accel * self.speed > dirx * self.speed then
+				self.dirx = self.dirx - dt / self.accel * self.speed
+				movex = true
+				if self.dirx < dirx * self.speed then
+					self.dirx = dirx * self.speed
+				end
 			end
 		end
-	elseif dirx < 0 then
-		if self.dirx - dt / self.accel * self.speed > dirx * self.speed then
-			self.dirx = self.dirx - dt / self.accel * self.speed
-			movex = true
-			if self.dirx < dirx * self.speed then
-				self.dirx = dirx * self.speed
+		if diry > 0 then
+			if self.diry + dt / self.accel * self.speed < self.speed * diry then
+				self.diry = self.diry + dt / self.accel * self.speed
+				movey = true
+				if self.diry > self.speed * diry then
+					self.diry = self.speed * diry
+				end
+			end
+		elseif diry < 0 then
+			if self.diry - dt / self.accel * self.speed > diry * self.speed then
+				self.diry = self.diry - dt / self.accel * self.speed
+				movey = true
+				if self.diry < diry * self.speed then
+					self.diry = diry * self.speed
+				end
 			end
 		end
-	end
-	if diry > 0 then
-		if self.diry + dt / self.accel * self.speed < self.speed * diry then
-			self.diry = self.diry + dt / self.accel * self.speed
-			movey = true
-			if self.diry > self.speed * diry then
-				self.diry = self.speed * diry
-			end
-		end
-	elseif diry < 0 then
-		if self.diry - dt / self.accel * self.speed > diry * self.speed then
-			self.diry = self.diry - dt / self.accel * self.speed
-			movey = true
-			if self.diry < diry * self.speed then
-				self.diry = diry * self.speed
-			end
-		end
-	end
-	if not movex then
-		if self.dirx > 0 then
-			self.dirx = self.dirx - dt / self.decel * self.speed
-			if self.dirx < 0 then
-				self.dirx = 0
-			end
-		elseif self.dirx < 0 then
-			self.dirx = self.dirx + dt / self.decel * self.speed
+		if not movex then
 			if self.dirx > 0 then
-				self.dirx = 0
+				self.dirx = self.dirx - dt / self.decel * self.speed
+				if self.dirx < 0 then
+					self.dirx = 0
+				end
+			elseif self.dirx < 0 then
+				self.dirx = self.dirx + dt / self.decel * self.speed
+				if self.dirx > 0 then
+					self.dirx = 0
+				end
 			end
 		end
-	end
-	if not movey then
-		if self.diry > 0 then
-			self.diry = self.diry - dt / self.decel * self.speed
-			if self.diry < 0 then
-				self.diry = 0
-			end
-		elseif self.diry < 0 then
-			self.diry = self.diry + dt / self.decel * self.speed
+		if not movey then
 			if self.diry > 0 then
-				self.diry = 0
+				self.diry = self.diry - dt / self.decel * self.speed
+				if self.diry < 0 then
+					self.diry = 0
+				end
+			elseif self.diry < 0 then
+				self.diry = self.diry + dt / self.decel * self.speed
+				if self.diry > 0 then
+					self.diry = 0
+				end
 			end
 		end
 	end
@@ -276,7 +282,78 @@ function Worm:draw()
 	love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w,o.pA.pos.y-math.cos(ang)*o.pA.w,
 									 o.pA.pos.x+math.sin(ang)*o.pA.w,o.pA.pos.y+math.cos(ang)*o.pA.w,
 									 o.pB.pos.x,o.pB.pos.y)
-	for i,o in pairs(self.sticks) do
-		love.graphics.line(o.pA.pos.x,o.pA.pos.y,o.pB.pos.x,o.pB.pos.y)
+end
+
+Camera = {
+	x = 0,
+	y = 0,
+}
+
+function Camera:new()
+	local o = {}
+	setmetatable(o, self)
+	self.__index = self
+	
+	o.x = 0
+	o.y = 0
+	
+	o.w = love.graphics.getWidth()
+	o.h = love.graphics.getHeight()
+	
+	return o
+end
+
+function Camera:update(dt)
+	self.x = scene.player.x-self.w/2
+	self.y = scene.player.y-self.h/2
+	if self.y < 0 then
+		self.y = 0
+		self.y = self.y + scene.player.y%1
 	end
+	if self.y + self.h > scene.h then
+		self.y = scene.h-self.h
+		self.y = self.y + scene.player.y%1 -1
+	end
+end
+
+City = {
+	player = {},
+	buildings = {},
+	y = 600,
+	w = 2*love.graphics.getWidth(),
+	h = 1000,
+	
+	camera = {},
+	
+	grav = 800,
+}
+
+function City:new()
+	local o = {}
+	setmetatable(o, self)
+	self.__index = self
+	
+	o.player = {}
+	o.buildings = {}
+	o.camera = {}
+	
+	return o
+end
+
+function City:load()
+	self.player = Worm:new()
+	self.player:load(100,100)
+	self.camera = Camera:new()
+end
+
+function City:update(dt)
+	self.player:update(dt)
+	self.camera:update(dt)
+end
+
+function City:draw()
+	love.graphics.translate(-self.camera.x,-self.camera.y)
+	love.graphics.setColor(0.7,0.7,0.7)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	self.player:draw()
 end
