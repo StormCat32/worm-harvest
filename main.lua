@@ -378,12 +378,19 @@ function City:load()
 		if buildPos < self.w/3 or buildPos > self.w*2/3 then
 			local hh = math.random(self.sBuildHmin,self.sBuildH)
 			local ww = math.random(self.sBuildW,math.min(hh,self.sBuildWmax))
-			table.insert(self.buildings,Building:new(buildPos,ww,hh))
+			local isHouse = math.random(1,5)
+			if isHouse >= 3 then
+				isHouse = false
+			else
+				hh = math.ceil(hh*2/3)
+				ww = math.random(hh,hh*3/2)
+			end			
+			table.insert(self.buildings,Building:new(buildPos,ww,hh,false,isHouse))
 			buildPos = buildPos + ww + math.random(self.sBuildDifMin,self.sBuildDif)
 		else
 			local hh = math.random(self.cBuildHmin,self.cBuildH)
 			local ww = math.random(self.cBuildW,math.min(hh,self.cBuildWmax))
-			table.insert(self.buildings,Building:new(buildPos,ww,hh))
+			table.insert(self.buildings,Building:new(buildPos,ww,hh,true))
 			buildPos = buildPos + ww + math.random(self.cBuildDifMin,self.cBuildDif)
 		end
 	end
@@ -415,11 +422,13 @@ Building = {
 	w = 0,
 	h = 0,
 	
+	sky = false,
+	
 	features = {},
 	canvas = {},
 }
 
-function Building:new(x,w,h)
+function Building:new(x,w,h,sky,house)
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
@@ -432,27 +441,65 @@ function Building:new(x,w,h)
 	o.x = x
 	o.y = scene.y-h
 	
+	if sky then
+		o.sky = true
+	end
+	
+	if house then
+		o.house = true
+	end
+	
 	return o
 end
 
 function Building:load()
 	self.canvas = love.graphics.newCanvas(self.w,self.h)
-	local featureType = math.random(1,10)
-	if featureType == 1 then
-		local length = math.random(self.w/4,self.w/2)
-		table.insert(self.features,{poly={0,0,0,length,length,0}})
-	elseif featureType == 2 then
-		local length = math.random(self.w/4,self.w/2)
-		table.insert(self.features,{poly={self.w,0,self.w,length,self.w-length,0}})
-	elseif featureType == 3 then
-		local ww = math.random(self.w*1/3,self.w*2/3)
-		table.insert(self.features,{poly={self.w/2-ww/2,self.h/2+ww*0.866/2,self.w/2+ww/2,self.h/2+ww*0.866/2,self.w/2,self.h/2-ww*0.866/2}})
+	if self.house then
+		local inlay = math.random(self.w/8,self.w/4)
+		local height = self.h*3/4
+		table.insert(self.features,{poly={0,self.h,0,self.h-height,inlay,self.h-height,inlay,self.h}})
+		table.insert(self.features,{poly={self.w,self.h,self.w,self.h-height,self.w-inlay,self.h-height,self.w-inlay,self.h}})
+		table.insert(self.features,{poly={0,0,self.w/2,0,0,self.h-height}})
+		table.insert(self.features,{poly={self.w,0,self.w/2,0,self.w,self.h-height}})
 	else
-		local hh = math.random(12,self.h/4)
-		local ww = math.random(hh/2,hh)
-		local xx = math.random(2,self.w-ww-2)
-		local yy = math.random(2,self.h-hh-2)
-		table.insert(self.features,{poly={xx,yy,xx+ww,yy,xx+ww,yy+hh,xx,yy+hh}})
+		local featureType = math.random(1,10)
+		if featureType == 1 then
+			local length = math.random(self.w/4,self.w/2)
+			table.insert(self.features,{poly={0,0,0,length,length,0}})
+		elseif featureType == 2 then
+			local length = math.random(self.w/4,self.w/2)
+			table.insert(self.features,{poly={self.w,0,self.w,length,self.w-length,0}})
+		elseif featureType == 3 then
+			local ww = math.random(self.w*1/3,self.w*2/3)
+			table.insert(self.features,{poly={self.w/2-ww/2,self.h/2+ww*0.866/2,self.w/2+ww/2,self.h/2+ww*0.866/2,self.w/2,self.h/2-ww*0.866/2}})
+		else
+			local hh = math.random(self.h/12,self.h/6)
+			if self.sky then
+				hh = math.random(self.w/8,self.w/4)
+			end
+			local ww = math.random(hh/2,hh*3/4)
+			local xx = math.random(self.w/10,self.w-ww-self.w/10)
+			local yy = math.random(self.h/12,self.h-hh-self.w/12)
+			table.insert(self.features,{poly={xx,yy,xx+ww,yy,xx+ww,yy+hh,xx,yy+hh}})
+			local extraWindows = featureType-4
+			if self.sky then
+				extraWindows = extraWindows + math.random(0,12)
+			end
+			while extraWindows > 0 do
+				local offx = math.random(-6,6)
+				local offy = math.random(-6,6)
+				if xx + ww*offx*2 > self.w/10 then
+					if yy + hh*offy*2 > self.h/12 then
+						if xx + ww*offx*2 < self.w-ww-self.w/10 then
+							if yy + hh*offy*2 < self.h-hh-self.w/12 then
+								table.insert(self.features,{poly={xx + ww*offx*2,yy+ hh*offy*2,xx+ww + ww*offx*2,yy+ hh*offy*2,xx+ww + ww*offx*2,yy+hh + hh*offy*2,xx + ww*offx*2,yy+hh + hh*offy*2}})
+								extraWindows = extraWindows - 1
+							end
+						end
+					end
+				end
+			end
+		end
 	end
 	love.graphics.setCanvas({self.canvas,stencil=true})
 		love.graphics.stencil(function () for i,o in pairs(self.features) do
