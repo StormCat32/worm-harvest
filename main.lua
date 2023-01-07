@@ -100,11 +100,16 @@ Worm = {
 	dirx = 0,
 	diry = 0,
 	
+	--ground stuff
+	speed = 720,
+	accel = 0.6,
+	decel = 0.8,
+	
 	points = {},
 	sticks = {},
 	
-	damping = 0.2,
-	numIter = 10,
+	damping = 0.92,
+	numIter = 100,
 }
 
 function Worm:new()
@@ -130,13 +135,93 @@ function Worm:load(x,y)
 end
 
 function Worm:update(dt)
-	self.x,self.y=love.mouse.getPosition()
+	self:move(dt)
 	self:bodyUpdate(dt)
 end
 
-function Worm:bodyUpdate(dt)
+function Worm:move(dt)
+	local dirx = 0
+	local diry = 0
+	if love.keyboard.isDown("right","d") then
+		dirx = dirx + 1
+	end
+	if love.keyboard.isDown("left","a") then
+		dirx = dirx - 1
+	end
+	if love.keyboard.isDown("down","s") then
+		diry = diry + 1
+	end
+	if love.keyboard.isDown("up","w") then
+		diry = diry - 1
+	end
+	local movex = false
+	local movey = false
+	if dirx > 0 then
+		if self.dirx + dt / self.accel * self.speed < self.speed * dirx then
+			self.dirx = self.dirx + dt / self.accel * self.speed
+			movex = true
+			if self.dirx > self.speed * dirx then
+				self.dirx = self.speed * dirx
+			end
+		end
+	elseif dirx < 0 then
+		if self.dirx - dt / self.accel * self.speed > dirx * self.speed then
+			self.dirx = self.dirx - dt / self.accel * self.speed
+			movex = true
+			if self.dirx < dirx * self.speed then
+				self.dirx = dirx * self.speed
+			end
+		end
+	end
+	if diry > 0 then
+		if self.diry + dt / self.accel * self.speed < self.speed * diry then
+			self.diry = self.diry + dt / self.accel * self.speed
+			movey = true
+			if self.diry > self.speed * diry then
+				self.diry = self.speed * diry
+			end
+		end
+	elseif diry < 0 then
+		if self.diry - dt / self.accel * self.speed > diry * self.speed then
+			self.diry = self.diry - dt / self.accel * self.speed
+			movey = true
+			if self.diry < diry * self.speed then
+				self.diry = diry * self.speed
+			end
+		end
+	end
+	if not movex then
+		if self.dirx > 0 then
+			self.dirx = self.dirx - dt / self.decel * self.speed
+			if self.dirx < 0 then
+				self.dirx = 0
+			end
+		elseif self.dirx < 0 then
+			self.dirx = self.dirx + dt / self.decel * self.speed
+			if self.dirx > 0 then
+				self.dirx = 0
+			end
+		end
+	end
+	if not movey then
+		if self.diry > 0 then
+			self.diry = self.diry - dt / self.decel * self.speed
+			if self.diry < 0 then
+				self.diry = 0
+			end
+		elseif self.diry < 0 then
+			self.diry = self.diry + dt / self.decel * self.speed
+			if self.diry > 0 then
+				self.diry = 0
+			end
+		end
+	end
+	
 	self.x = self.x + self.dirx*dt
 	self.y = self.y + self.diry*dt
+end
+
+function Worm:bodyUpdate(dt)
 	self.points[1].pos.x = self.x
 	self.points[1].pos.y = self.y
 	self:simulate(dt)
@@ -176,7 +261,7 @@ end
 
 function Worm:draw()
 	love.graphics.setColor(1,1,1)
-	for z = 1,#self.sticks-2 do
+	for z = 2,#self.sticks-2 do
 		local o = self.sticks[z]
 		local p = self.sticks[z+1]
 		local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
