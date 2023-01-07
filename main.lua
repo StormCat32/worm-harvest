@@ -18,16 +18,19 @@
 	perhaps buildings can give you some form of upgrades as well
 	
 	colours
-	5 - (39/255,6/255,0/255)
-	4 - (83/255,27/255,2/255)
-	3 - (170/255,77/255,20/255)
+	6 - (39/255,6/255,0/255)
+	5 - (83/255,27/255,2/255)
+	4 - (170/255,77/255,20/255)
+	3 - (212/255,109/255,20/255)
 	2 - (254/255,157/255,0/255)
 	1 - (254/255,223/255,96/255)
 	
 ]]--
 
+local backGround = {}
+
 function love.load()
-	love.graphics.setBackgroundColor(254/255,157/255,0/255)
+	backGround = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
 	scene = City:new()
 	scene:load()
 end
@@ -37,6 +40,8 @@ function love.update(dt)
 end
 
 function love.draw()
+	love.graphics.setColor(1,1,1)
+	love.graphics.draw(backGround,0,0,0,love.graphics.getWidth(),love.graphics.getHeight())
 	scene:draw()
 end
 
@@ -334,9 +339,12 @@ end
 City = {
 	player = {},
 	buildings = {},
+	backBuildings = {},
+	backBackBuildings = {},
+	allBack = {},
 	y = 600,
 	w = 8*love.graphics.getWidth(),
-	h = 1000,
+	h = 950,
 	
 	cBuildDif = 80,
 	cBuildDifMin = 10,
@@ -364,6 +372,9 @@ function City:new()
 	
 	o.player = {}
 	o.buildings = {}
+	o.backBuildings = {}
+	o.backBackBuildings = {}
+	o.allBack = {}
 	o.camera = {}
 	
 	return o
@@ -394,7 +405,60 @@ function City:load()
 			buildPos = buildPos + ww + math.random(self.cBuildDifMin,self.cBuildDif)
 		end
 	end
+	love.graphics.setColor(83/255,27/255,2/255)
 	for i,o in pairs(self.buildings) do
+		o:load()
+	end
+	
+	local buildPos = math.random(0,self.sBuildDif)
+	while buildPos < self.w - self.sBuildWmax do
+		if buildPos < self.w/3 or buildPos > self.w*2/3 then
+			local hh = math.random(self.sBuildHmin,self.sBuildH)
+			local ww = math.random(self.sBuildW,math.min(hh,self.sBuildWmax))
+			local isHouse = math.random(1,5)
+			if isHouse >= 3 then
+				isHouse = false
+			else
+				hh = math.ceil(hh*2/3)
+				ww = math.random(hh,hh*3/2)
+			end			
+			table.insert(self.backBuildings,Building:new(buildPos,ww,hh,false,isHouse))
+			buildPos = buildPos + ww + math.random(self.sBuildDifMin,self.sBuildDif)
+		else
+			local hh = math.random(self.cBuildHmin,self.cBuildH)
+			local ww = math.random(self.cBuildW,math.min(hh,self.cBuildWmax))
+			table.insert(self.backBuildings,Building:new(buildPos,ww,hh,true))
+			buildPos = buildPos + ww + math.random(self.cBuildDifMin,self.cBuildDif)
+		end
+	end
+	love.graphics.setColor(170/255,77/255,20/255)
+	for i,o in pairs(self.backBuildings) do
+		o:load()
+	end
+	
+	local buildPos = math.random(0,self.sBuildDif)
+	while buildPos < self.w - self.sBuildWmax do
+		if buildPos < self.w/3 or buildPos > self.w*2/3 then
+			local hh = math.random(self.sBuildHmin,self.sBuildH)
+			local ww = math.random(self.sBuildW,math.min(hh,self.sBuildWmax))
+			local isHouse = math.random(1,5)
+			if isHouse >= 3 then
+				isHouse = false
+			else
+				hh = math.ceil(hh*2/3)
+				ww = math.random(hh,hh*3/2)
+			end			
+			table.insert(self.backBackBuildings,Building:new(buildPos,ww,hh,false,isHouse))
+			buildPos = buildPos + ww + math.random(self.sBuildDifMin,self.sBuildDif)
+		else
+			local hh = math.random(self.cBuildHmin,self.cBuildH)
+			local ww = math.random(self.cBuildW,math.min(hh,self.cBuildWmax))
+			table.insert(self.backBackBuildings,Building:new(buildPos,ww,hh,true))
+			buildPos = buildPos + ww + math.random(self.cBuildDifMin,self.cBuildDif)
+		end
+	end
+	love.graphics.setColor(212/255,109/255,20/255)
+	for i,o in pairs(self.backBackBuildings) do
 		o:load()
 	end
 end
@@ -405,6 +469,26 @@ function City:update(dt)
 end
 
 function City:draw()
+	love.graphics.translate(0,-math.floor(self.camera.y*1/2))
+	love.graphics.setColor(254/255,223/255,96/255)
+	love.graphics.circle("fill",self.camera.w/2,self.camera.h*2/3,self.camera.w/4)
+	love.graphics.origin()
+	love.graphics.translate(-math.floor(self.camera.x*3/4),-math.floor(self.camera.y*3/4))
+	love.graphics.scale(3/4,3/4)
+	love.graphics.setColor(212/255,109/255,20/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.backBackBuildings) do
+		o:draw()
+	end
+	love.graphics.origin()
+	love.graphics.translate(-math.floor(self.camera.x*5/6),-math.floor(self.camera.y*5/6))
+	love.graphics.scale(5/6,5/6)
+	love.graphics.setColor(170/255,77/255,20/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.backBuildings) do
+		o:draw()
+	end
+	love.graphics.origin()
 	love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -509,7 +593,6 @@ function Building:load()
 
 		love.graphics.setStencilTest("less", 1)
 
-		love.graphics.setColor(83/255,27/255,2/255)
 		love.graphics.rectangle("fill",0,0,self.w,self.h)
 
 		love.graphics.setStencilTest()
@@ -519,4 +602,43 @@ end
 function Building:draw()
 	love.graphics.setColor(1,1,1)
 	love.graphics.draw(self.canvas,self.x,self.y)
+end
+
+function gradientMesh(dir, ...)
+    -- Check for direction
+    local isHorizontal = true
+    if dir == "vertical" then
+        isHorizontal = false
+    elseif dir ~= "horizontal" then
+        error("bad argument #1 to 'gradient' (invalid value)", 2)
+    end
+
+    -- Check for colors
+    local colorLen = select("#", ...)
+    if colorLen < 2 then
+        error("color list is less than two", 2)
+    end
+
+    -- Generate mesh
+    local meshData = {}
+    if isHorizontal then
+        for i = 1, colorLen do
+            local color = select(i, ...)
+            local x = (i - 1) / (colorLen - 1)
+
+            meshData[#meshData + 1] = {x, 1, x, 1, color[1], color[2], color[3], color[4] or 1}
+            meshData[#meshData + 1] = {x, 0, x, 0, color[1], color[2], color[3], color[4] or 1}
+        end
+    else
+        for i = 1, colorLen do
+            local color = select(i, ...)
+            local y = (i - 1) / (colorLen - 1)
+
+            meshData[#meshData + 1] = {1, y, 1, y, color[1], color[2], color[3], color[4] or 1}
+            meshData[#meshData + 1] = {0, y, 0, y, color[1], color[2], color[3], color[4] or 1}
+        end
+    end
+
+    -- Resulting Mesh has 1x1 image size
+    return love.graphics.newMesh(meshData, "strip", "static")
 end
