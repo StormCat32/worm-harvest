@@ -241,6 +241,19 @@ function Worm:move(dt)
 end
 
 function Worm:bodyUpdate(dt)
+	if self.x < 0 then
+		self.x = self.x+scene.w
+		for z = 1,#self.points do
+			self.points[z].pos.x = self.points[z].pos.x+scene.w
+			self.points[z].posB.x = self.points[z].posB.x+scene.w
+		end
+	elseif self.x > scene.w then
+		self.x = self.x-scene.w
+		for z = 1,#self.points do
+			self.points[z].pos.x = self.points[z].pos.x-scene.w
+			self.points[z].posB.x = self.points[z].posB.x-scene.w
+		end
+	end
 	self.points[1].pos.x = self.x
 	self.points[1].pos.y = self.y
 	self:simulate(dt)
@@ -472,6 +485,12 @@ function City:draw()
 	love.graphics.translate(0,-math.floor(self.camera.y*1/2))
 	love.graphics.setColor(254/255,223/255,96/255)
 	love.graphics.circle("fill",self.camera.w/2,self.camera.h*2/3,self.camera.w/4)
+	
+	self:drawBackgrounds()
+	self:drawForegrounds()
+end
+
+function City:drawBackgrounds()
 	love.graphics.origin()
 	love.graphics.translate(-math.floor(self.camera.x*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
@@ -480,6 +499,25 @@ function City:draw()
 	for i,o in pairs(self.backBackBuildings) do
 		o:draw()
 	end
+	
+	love.graphics.origin()
+	love.graphics.translate(-math.floor((self.camera.x-self.w)*3/4),-math.floor(self.camera.y*3/4))
+	love.graphics.scale(3/4,3/4)
+	love.graphics.setColor(212/255,109/255,20/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.backBackBuildings) do
+		o:draw()
+	end
+	
+	love.graphics.origin()
+	love.graphics.translate(-math.floor((self.camera.x+self.w)*3/4),-math.floor(self.camera.y*3/4))
+	love.graphics.scale(3/4,3/4)
+	love.graphics.setColor(212/255,109/255,20/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.backBackBuildings) do
+		o:draw()
+	end
+	
 	love.graphics.origin()
 	love.graphics.translate(-math.floor(self.camera.x*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
@@ -488,6 +526,27 @@ function City:draw()
 	for i,o in pairs(self.backBuildings) do
 		o:draw()
 	end
+	
+	love.graphics.origin()
+	love.graphics.translate(-math.floor((self.camera.x-self.w)*5/6),-math.floor(self.camera.y*5/6))
+	love.graphics.scale(5/6,5/6)
+	love.graphics.setColor(170/255,77/255,20/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.backBuildings) do
+		o:draw()
+	end
+	
+	love.graphics.origin()
+	love.graphics.translate(-math.floor((self.camera.x+self.w)*5/6),-math.floor(self.camera.y*5/6))
+	love.graphics.scale(5/6,5/6)
+	love.graphics.setColor(170/255,77/255,20/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.backBuildings) do
+		o:draw()
+	end
+end
+
+function City:drawForegrounds()
 	love.graphics.origin()
 	love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
 	love.graphics.setColor(83/255,27/255,2/255)
@@ -495,6 +554,23 @@ function City:draw()
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
+	
+	love.graphics.origin()
+	love.graphics.translate(-math.floor(self.camera.x-self.w),-math.floor(self.camera.y))
+	love.graphics.setColor(83/255,27/255,2/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.buildings) do
+		o:draw()
+	end
+	
+	love.graphics.origin()
+	love.graphics.translate(-math.floor(self.camera.x+self.w),-math.floor(self.camera.y))
+	love.graphics.setColor(83/255,27/255,2/255)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.buildings) do
+		o:draw()
+	end
+	
 	love.graphics.origin()
 	love.graphics.translate(-self.camera.x,-self.camera.y)
 	self.player:draw()
