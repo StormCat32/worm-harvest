@@ -108,7 +108,7 @@ Worm = {
 	points = {},
 	sticks = {},
 	
-	damping = 0.92,
+	damping = 0.75,
 	numIter = 100,
 }
 
