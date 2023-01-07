@@ -261,7 +261,7 @@ end
 
 function Worm:draw()
 	love.graphics.setColor(1,1,1)
-	for z = 2,#self.sticks-2 do
+	for z = 1,#self.sticks-1 do
 		local o = self.sticks[z]
 		local p = self.sticks[z+1]
 		local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
@@ -271,11 +271,12 @@ function Worm:draw()
 									 o.pB.pos.x+math.sin(ang2)*o.pB.w,o.pB.pos.y+math.cos(ang2)*o.pB.w,
 									 o.pB.pos.x-math.sin(ang2)*o.pB.w,o.pB.pos.y-math.cos(ang2)*o.pB.w)
 	end
-	local o = self.sticks[#self.sticks-1]
-	local p = self.sticks[#self.sticks]
+	local o = self.sticks[#self.sticks]
 	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
-	local ang2 = -math.atan2(p.pB.pos.y-p.pA.pos.y,p.pB.pos.x-p.pA.pos.x)
 	love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w,o.pA.pos.y-math.cos(ang)*o.pA.w,
 									 o.pA.pos.x+math.sin(ang)*o.pA.w,o.pA.pos.y+math.cos(ang)*o.pA.w,
 									 o.pB.pos.x,o.pB.pos.y)
+	for i,o in pairs(self.sticks) do
+		love.graphics.line(o.pA.pos.x,o.pA.pos.y,o.pB.pos.x,o.pB.pos.y)
+	end
 end
