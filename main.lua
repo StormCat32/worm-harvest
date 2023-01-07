@@ -1,16 +1,3 @@
-function love.load()
-	scene = City:new()
-	scene:load()
-end
-
-function love.update(dt)
-	scene:update(dt)
-end
-
-function love.draw()
-	scene:draw()
-end
-
 --[[
 	worm game
 	
@@ -29,8 +16,29 @@ end
 	Where you have your own little people and you place the buildings you ate for them
 	once your town is complete you finish the game?
 	perhaps buildings can give you some form of upgrades as well
-
+	
+	colours
+	5 - (39/255,6/255,0/255)
+	4 - (83/255,27/255,2/255)
+	3 - (170/255,77/255,20/255)
+	2 - (254/255,157/255,0/255)
+	1 - (254/255,223/255,96/255)
+	
 ]]--
+
+function love.load()
+	love.graphics.setBackgroundColor(254/255,157/255,0/255)
+	scene = City:new()
+	scene:load()
+end
+
+function love.update(dt)
+	scene:update(dt)
+end
+
+function love.draw()
+	scene:draw()
+end
 
 Points = {
 	pos = {
@@ -266,7 +274,7 @@ function Worm:simulate(dt)
 end
 
 function Worm:draw()
-	love.graphics.setColor(1,1,1)
+	love.graphics.setColor(39/255,6/255,0/255)
 	for z = 1,#self.sticks-1 do
 		local o = self.sticks[z]
 		local p = self.sticks[z+1]
@@ -327,8 +335,22 @@ City = {
 	player = {},
 	buildings = {},
 	y = 600,
-	w = 2*love.graphics.getWidth(),
+	w = 8*love.graphics.getWidth(),
 	h = 1000,
+	
+	cBuildDif = 80,
+	cBuildDifMin = 10,
+	cBuildH = 550,
+	cBuildHmin = 100,
+	cBuildW = 80,
+	cBuildWmax = 120,
+	
+	sBuildDif = 160,
+	sBuildDifMin = 60,
+	sBuildH = 180,
+	sBuildHmin = 60,
+	sBuildW = 60,
+	sBuildWmax = 120,
 	
 	camera = {},
 	
@@ -351,6 +373,23 @@ function City:load()
 	self.player = Worm:new()
 	self.player:load(100,100)
 	self.camera = Camera:new()
+	local buildPos = math.random(0,self.sBuildDif)
+	while buildPos < self.w - self.sBuildWmax do
+		if buildPos < self.w/3 or buildPos > self.w*2/3 then
+			local hh = math.random(self.sBuildHmin,self.sBuildH)
+			local ww = math.random(self.sBuildW,math.min(hh,self.sBuildWmax))
+			table.insert(self.buildings,Building:new(buildPos,ww,hh))
+			buildPos = buildPos + ww + math.random(self.sBuildDifMin,self.sBuildDif)
+		else
+			local hh = math.random(self.cBuildHmin,self.cBuildH)
+			local ww = math.random(self.cBuildW,math.min(hh,self.cBuildWmax))
+			table.insert(self.buildings,Building:new(buildPos,ww,hh))
+			buildPos = buildPos + ww + math.random(self.cBuildDifMin,self.cBuildDif)
+		end
+	end
+	for i,o in pairs(self.buildings) do
+		o:load()
+	end
 end
 
 function City:update(dt)
@@ -359,8 +398,78 @@ function City:update(dt)
 end
 
 function City:draw()
-	love.graphics.translate(-self.camera.x,-self.camera.y)
-	love.graphics.setColor(0.7,0.7,0.7)
+	love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
+	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	for i,o in pairs(self.buildings) do
+		o:draw()
+	end
+	love.graphics.origin()
+	love.graphics.translate(-self.camera.x,-self.camera.y)
 	self.player:draw()
+end
+
+Building = {
+	x = 0,
+	y = 0,
+	w = 0,
+	h = 0,
+	
+	features = {},
+	canvas = {},
+}
+
+function Building:new(x,w,h)
+	local o = {}
+	setmetatable(o, self)
+	self.__index = self
+	
+	o.features = {}
+	o.canvas = {}
+	
+	o.w = w
+	o.h = h
+	o.x = x
+	o.y = scene.y-h
+	
+	return o
+end
+
+function Building:load()
+	self.canvas = love.graphics.newCanvas(self.w,self.h)
+	local featureType = math.random(1,10)
+	if featureType == 1 then
+		local length = math.random(self.w/4,self.w/2)
+		table.insert(self.features,{poly={0,0,0,length,length,0}})
+	elseif featureType == 2 then
+		local length = math.random(self.w/4,self.w/2)
+		table.insert(self.features,{poly={self.w,0,self.w,length,self.w-length,0}})
+	elseif featureType == 3 then
+		local ww = math.random(self.w*1/3,self.w*2/3)
+		table.insert(self.features,{poly={self.w/2-ww/2,self.h/2+ww*0.866/2,self.w/2+ww/2,self.h/2+ww*0.866/2,self.w/2,self.h/2-ww*0.866/2}})
+	else
+		local hh = math.random(12,self.h/4)
+		local ww = math.random(hh/2,hh)
+		local xx = math.random(2,self.w-ww-2)
+		local yy = math.random(2,self.h-hh-2)
+		table.insert(self.features,{poly={xx,yy,xx+ww,yy,xx+ww,yy+hh,xx,yy+hh}})
+	end
+	love.graphics.setCanvas({self.canvas,stencil=true})
+		love.graphics.stencil(function () for i,o in pairs(self.features) do
+											love.graphics.polygon("fill",o.poly)
+										end end,
+							  "replace", 1)
+
+		love.graphics.setStencilTest("less", 1)
+
+		love.graphics.setColor(83/255,27/255,2/255)
+		love.graphics.rectangle("fill",0,0,self.w,self.h)
+
+		love.graphics.setStencilTest()
+	love.graphics.setCanvas()
+end
+
+function Building:draw()
+	love.graphics.setColor(1,1,1)
+	love.graphics.draw(self.canvas,self.x,self.y)
 end
