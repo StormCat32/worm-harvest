@@ -168,9 +168,9 @@ function City:update(dt)
 	if self.startTimer <= 0 then
 		self.endTimer = self.endTimer - dt
 		if self.player.dead == false then
-			if self.endTimer <= 0 then --bombs start to drop on player's level
+			if self.endTimer <= self.endTimerMax/4 then --bombs start to drop on player's level
 				self.bombTimer = self.bombTimer - dt
-				if self.bombTimer <= self.endTimerMax/4 then
+				if self.bombTimer <= 0 then
 					table.insert(self.bombs,Bomb:new(1))
 					self.bombTimer = self.bombTimerMax
 				end
