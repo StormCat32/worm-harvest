@@ -106,9 +106,22 @@ function Worm:load(x,y)
 	end
 end
 
+function Worm:buildUpdate(dt)
+	if self.diry + dt / self.accel * self.speed > self.speed * -1 then
+		self.diry = self.diry + dt / self.accel * self.speed * -1
+		if self.diry < self.speed * -1 then
+			self.diry = self.speed * -1
+		end
+	end
+	self:bodyUpdate(dt)
+end
+
 function Worm:update(dt)
 	if not self.dead then
 		self:move(dt)
+		if self.sceneChange then
+			return
+		end
 		self:bodyUpdate(dt)
 	else
 		self.deathTimer = self.deathTimer - dt
@@ -131,25 +144,50 @@ function Worm:move(dt)
 			self.diry = self.diry - scene.grav*dt*4
 		else
 			if scene.won then
-				if self.dirx - dt / self.accel * self.speed > -1 * self.speed then
-					self.dirx = self.dirx - dt / self.accel * self.speed
-					if self.dirx < -1 * self.speed then
-						self.dirx = -1 * self.speed
+				if scene.winTimer <= 0 then
+					if self.diry + dt / self.accel * self.speed > self.speed * -1 then
+						self.diry = self.diry + dt / self.accel * self.speed * -1
+						if self.diry < self.speed * -1 then
+							self.diry = self.speed * -1
+						end
 					end
-				end
-				if self.diry > 0 then
-					self.diry = self.diry - dt / self.decel * self.speed
-					if self.diry < 0 then
-						self.diry = 0
+					if self.dirx > 0 then
+						self.dirx = self.dirx - dt / self.decel * self.speed
+						if self.dirx < 0 then
+							self.dirx = 0
+						end
+					elseif self.dirx < 0 then
+						self.dirx = self.dirx + dt / self.decel * self.speed
+						if self.dirx > 0 then
+							self.dirx = 0
+						end
 					end
-				elseif self.diry < 0 then
-					self.diry = self.diry + dt / self.decel * self.speed
+					if self.dirx == 0 then
+						scene:change()
+						self.sceneChange = true
+						return
+					end
+				else
+					if self.dirx - dt / self.accel * self.speed > -1 * self.speed then
+						self.dirx = self.dirx - dt / self.accel * self.speed
+						if self.dirx < -1 * self.speed then
+							self.dirx = -1 * self.speed
+						end
+					end
 					if self.diry > 0 then
-						self.diry = 0
+						self.diry = self.diry - dt / self.decel * self.speed
+						if self.diry < 0 then
+							self.diry = 0
+						end
+					elseif self.diry < 0 then
+						self.diry = self.diry + dt / self.decel * self.speed
+						if self.diry > 0 then
+							self.diry = 0
+						end
 					end
 				end
 			else
-				if self.y > scene.h + self.h*2+20 then
+				if self.y > scene.h + self.h*4+20 then
 					scene:leave()
 				else
 					if self.diry + dt / self.accel * self.speed < self.speed * 1 then
@@ -310,6 +348,9 @@ end
 
 function Worm:draw()
 	love.graphics.setColor(39/255,6/255,0/255)
+	if scene.won then
+		love.graphics.setColor(math.lerp(39,1,1-scene.winTimer/scene.winTimerMax)/255,math.lerp(6,33,1-scene.winTimer/scene.winTimerMax)/255,math.lerp(0,13,1-scene.winTimer/scene.winTimerMax)/255)
+	end
 	if self.dead then
 		if self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(0) then
 			love.graphics.setColor(39/255,6/255,0/255)

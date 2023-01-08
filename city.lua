@@ -54,6 +54,11 @@ City = {
 	
 	startTimer = 3,
 	startTimerMax = 3,
+	
+	winTimer = 7,
+	winTimerMax = 7,
+	
+	backGround = {},
 }
 
 function City:new()
@@ -79,6 +84,8 @@ function City:new()
 end
 
 function City:load()
+	self.backGround = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
+
 	self.endTimer = self.endTimerMax
 	self.startTimer = self.startTimerMax
 	
@@ -167,7 +174,12 @@ end
 function City:update(dt)
 	if self.startTimer <= 0 then
 		self.endTimer = self.endTimer - dt
-		if self.player.dead == false then
+		if self.won then
+			self.winTimer = self.winTimer - dt
+			if self.winTimer < 0 then
+				self.winTimer = 0
+			end
+		elseif self.player.dead == false then
 			if self.endTimer <= self.endTimerMax/4 then --bombs start to drop on player's level
 				self.bombTimer = self.bombTimer - dt
 				if self.bombTimer <= 0 then
@@ -191,6 +203,9 @@ function City:update(dt)
 			end
 		end
 		self.player:update(dt)
+		if self.player.sceneChange then
+			return
+		end
 		self.camera:update(dt)
 		for i,o in pairs(self.buildings) do
 			o:update(dt)
@@ -244,6 +259,8 @@ function City:update(dt)
 end
 
 function City:draw()
+	love.graphics.setColor(1,1,1)
+	love.graphics.draw(self.backGround,0,0,0,self.camera.w,self.camera.h)
 	love.graphics.translate(0,-math.floor(self.camera.y*1/2))
 	love.graphics.setColor(254/255,223/255,96/255)
 	love.graphics.circle("fill",self.camera.w/2,self.camera.h*2/3,self.camera.w/4)
@@ -394,6 +411,9 @@ function City:drawForegrounds()
 	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
+	if self.won then
+		love.graphics.setColor(math.lerp(83,12,1-self.winTimer/self.winTimerMax)/255,math.lerp(27,69,1-self.winTimer/self.winTimerMax)/255,math.lerp(2,43,1-self.winTimer/self.winTimerMax)/255)
+	end
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h*20)
 	love.graphics.setStencilTest()
 	
@@ -414,6 +434,9 @@ function City:drawForegrounds()
 	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
+	if self.won then
+		love.graphics.setColor(math.lerp(83,12,1-self.winTimer/self.winTimerMax)/255,math.lerp(27,69,1-self.winTimer/self.winTimerMax)/255,math.lerp(2,43,1-self.winTimer/self.winTimerMax)/255)
+	end
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h*20)
 	love.graphics.setStencilTest()
 	
@@ -434,6 +457,9 @@ function City:drawForegrounds()
 	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
+	if self.won then
+		love.graphics.setColor(math.lerp(83,12,1-self.winTimer/self.winTimerMax)/255,math.lerp(27,69,1-self.winTimer/self.winTimerMax)/255,math.lerp(2,43,1-self.winTimer/self.winTimerMax)/255)
+	end
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h*20)
 	love.graphics.setStencilTest()
 	
@@ -492,7 +518,9 @@ end
 
 function City:leave()
 	self.won = true
-
+	
+	self.winTimer = self.winTimerMax
+	
 	self.buildings = {}
 	self.backBuildings = {}
 	self.backBackBuildings = {}
@@ -509,6 +537,11 @@ function City:leave()
 	--after the colour change is complete, the worm tunnels up until breaching the surface and the buildings
 	--they collected get spat out into a sidebar and the worm tunnels back down
 	--city building commences
+end
+
+function City:change()
+	scene = Build:new()
+	scene:load(self.player)
 end
 
 Building = {
@@ -660,7 +693,7 @@ function Bomb:new(layer)
 	o.x = math.random(0,scene.w)
 	o.y = -200
 	
-	o.speed = math.random(200,600)
+	o.speed = math.random(200,350)
 	
 	o.bombR = math.random(80,160)
 	

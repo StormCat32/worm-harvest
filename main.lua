@@ -17,7 +17,7 @@
 	once your town is complete you finish the game?
 	perhaps buildings can give you some form of upgrades as well
 	
-	colours
+	colours - city
 	6 - (39/255,6/255,0/255)
 	5 - (83/255,27/255,2/255)
 	4 - (170/255,77/255,20/255)
@@ -25,17 +25,23 @@
 	2 - (254/255,157/255,0/255)
 	1 - (254/255,223/255,96/255)
 	
+	colours - build
+	6 - (1/255,33/255,13/255)
+	5 - (12/255,69/255,43/255)
+	4 - (27/255,110/255,85/255)
+	3 - (43/255,164/255,150/255)
+	2 - (149/255,228/255,241/255)
+	1 - (224/255,255/255,255/255)
+	
 ]]--
 
 require "base"
 require "city"
 require "player"
-
-local backGround = {}
+require "build"
 
 function love.load()
 	math.randomseed(os.time())
-	backGround = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
 	scene = City:new()
 	scene:load()
 end
@@ -45,8 +51,6 @@ function love.update(dt)
 end
 
 function love.draw()
-	love.graphics.setColor(1,1,1)
-	love.graphics.draw(backGround,0,0,0,love.graphics.getWidth(),love.graphics.getHeight())
 	scene:draw()
 end
 

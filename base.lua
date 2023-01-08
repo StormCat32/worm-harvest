@@ -127,3 +127,7 @@ end
 function math.sign(number)
     return (number > 0 and 1) or (number == 0 and 0) or -1
 end
+
+function math.lerp(a,b,f) --starting value, end value, phase between (0-1)
+	return a + f * (b - a)
+end
