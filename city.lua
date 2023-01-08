@@ -515,6 +515,7 @@ end
 
 function City:die()
 	self.player.dead = true
+	cityBuilding.deathCount = cityBuilding.deathCount + 1
 	--player freeze frames wherever they currently are
 	--segments all do the colour change flash thing that the explosions do in order
 	--after all segments have dissapeared game fades to city brown

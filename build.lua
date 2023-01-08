@@ -36,6 +36,8 @@ Build = {
 	currentLayer = 2,
 	currentTimer = 0,
 	currentTimerMax = 0.5,
+	
+	deathCount = 0,
 }
 
 function Build:new()
@@ -317,8 +319,8 @@ function Build:newBuilding()
 				count4 = count4 + o.type-3
 			end
 		end
-		score = 5*count1+10*count2+15*count3+count4
-		self.gameOverMessage = "Salvage City Score\nWindows - 1 x "..count4.."\nHouses - 5 x "..count1.."\nSheared Skyscrapers - 10 x "..count2.."\nTriangle Viewports - 15 x "..count3.."\n\nFinal Score - "..score
+		score = 5*count1+10*count2+15*count3+count4-10*self.deathCount
+		self.gameOverMessage = "Salvage City Score\nWindows - 1 x "..count4.."\nHouses - 5 x "..count1.."\nSheared Skyscrapers - 10 x "..count2.."\nTriangle Viewports - 15 x "..count3.."\nNumber of Deaths - -10 x "..self.deathCount.."\n\nFinal Score - "..score
 	end
 end
 
