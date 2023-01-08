@@ -51,6 +51,9 @@ City = {
 	camera = {},
 	
 	grav = 800,
+	
+	startTimer = 3,
+	startTimerMax = 3,
 }
 
 function City:new()
@@ -77,6 +80,7 @@ end
 
 function City:load()
 	self.endTimer = self.endTimerMax
+	self.startTimer = self.startTimerMax
 	
 	self.player = Worm:new()
 	self.player:load(0,self.h+50)
@@ -161,65 +165,81 @@ function City:load()
 end
 
 function City:update(dt)
-	self.endTimer = self.endTimer - dt
-	if self.endTimer <= 0 then --bombs start to drop on player's level
-		self.backBackBombTimer = self.backBackBombTimer - dt
-		if self.backBackBombTimer <= 0 then
-			table.insert(self.backBackBombs,Bomb:new(1))
-			self.backBackBombTimer = self.bombTimerMax
+	if self.startTimer <= 0 then
+		self.endTimer = self.endTimer - dt
+		if self.player.dead == false then
+			if self.endTimer <= 0 then --bombs start to drop on player's level
+				self.backBackBombTimer = self.backBackBombTimer - dt
+				if self.backBackBombTimer <= 0 then
+					table.insert(self.backBackBombs,Bomb:new(1))
+					self.backBackBombTimer = self.bombTimerMax
+				end
+			end
+			if self.endTimer <= self.endTimerMax/3 then --bombs on first background
+				self.backBackBombTimer = self.backBackBombTimer - dt
+				if self.backBackBombTimer <= 0 then
+					table.insert(self.backBackBombs,Bomb:new(2))
+					self.backBackBombTimer = self.bombTimerMax*3/4
+				end
+			end
+			if self.endTimer <= self.endTimerMax*2/3 then --bombs on second background
+				self.backBackBombTimer = self.backBackBombTimer - dt
+				if self.backBackBombTimer <= 0 then
+					table.insert(self.backBackBombs,Bomb:new(3))
+					self.backBackBombTimer = self.bombTimerMax/2
+				end
+			end
 		end
-	end
-	if self.endTimer <= self.endTimerMax/3 then --bombs on first background
-		self.backBackBombTimer = self.backBackBombTimer - dt
-		if self.backBackBombTimer <= 0 then
-			table.insert(self.backBackBombs,Bomb:new(2))
-			self.backBackBombTimer = self.bombTimerMax*3/4
+		self.player:update(dt)
+		self.camera:update(dt)
+		for i,o in pairs(self.buildings) do
+			o:update(dt)
 		end
-	end
-	if self.endTimer <= self.endTimerMax*2/3 then --bombs on second background
-		self.backBackBombTimer = self.backBackBombTimer - dt
-		if self.backBackBombTimer <= 0 then
-			table.insert(self.backBackBombs,Bomb:new(3))
-			self.backBackBombTimer = self.bombTimerMax/2
+		for i,o in pairs(self.bombs) do
+			if o.remove then
+				table.remove(self.bombs,i)
+			end
 		end
-	end
-	self.player:update(dt)
-	self.camera:update(dt)
-	for i,o in pairs(self.buildings) do
-		o:update(dt)
-	end
-	for i,o in pairs(self.bombs) do
-		if o.remove then
-			table.remove(self.bombs,i)
+		for i,o in pairs(self.backBombs) do
+			if o.remove then
+				table.remove(self.backBombs,i)
+			end
 		end
-	end
-	for i,o in pairs(self.backBombs) do
-		if o.remove then
-			table.remove(self.backBombs,i)
+		for i,o in pairs(self.backBackBombs) do
+			if o.remove then
+				table.remove(self.backBackBombs,i)
+			end
 		end
-	end
-	for i,o in pairs(self.backBackBombs) do
-		if o.remove then
-			table.remove(self.backBackBombs,i)
+		for i,o in pairs(self.bombs) do
+			o:update(dt,nil)
 		end
-	end
-	for i,o in pairs(self.bombs) do
-		o:update(dt,nil)
-	end
-	for i,o in pairs(self.backBombs) do
-		o:update(dt,self.backBuildings)
-	end
-	for i,o in pairs(self.backBackBombs) do
-		o:update(dt,self.backBackBuildings)
-	end
-	for i,o in pairs(self.explode) do
-		o:update(dt)
-	end
-	for i,o in pairs(self.backExplode) do
-		o:update(dt)
-	end
-	for i,o in pairs(self.backBackExplode) do
-		o:update(dt)
+		for i,o in pairs(self.backBombs) do
+			o:update(dt,self.backBuildings)
+		end
+		for i,o in pairs(self.backBackBombs) do
+			o:update(dt,self.backBackBuildings)
+		end
+		for i,o in pairs(self.explode) do
+			o:update(dt)
+		end
+		for i,o in pairs(self.backExplode) do
+			o:update(dt)
+		end
+		for i,o in pairs(self.backBackExplode) do
+			o:update(dt)
+		end
+	else
+		if self.player.dead then
+			self.startTimer = self.startTimer + dt
+			if self.startTimer > self.startTimerMax then
+				scene = City:new()
+				scene:load()
+			end
+		else
+			self.startTimer = self.startTimer - dt
+		end
+		self.camera.x = self.player.x-self.camera.w/2
+		self.camera.y = self.h-self.camera.h-2000*self.startTimer/self.startTimerMax
 	end
 end
 
@@ -231,10 +251,9 @@ function City:draw()
 	
 	self:drawBackgrounds()
 	self:drawForegrounds()
-	love.graphics.print(self.endTimer)
 	
 	if self.endTimer <= 0 then
-		love.graphics.setColor(254/255,223/255,96/255)
+		love.graphics.setColor(254/255,223/255,96/255,-self.endTimer)
 		love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
 		love.graphics.polygon("fill",self.player.x-40,self.h-160,self.player.x+40,self.h-160,self.player.x,self.h-160+80*0.866)
 		love.graphics.origin()

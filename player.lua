@@ -112,6 +112,9 @@ function Worm:update(dt)
 		self:bodyUpdate(dt)
 	else
 		self.deathTimer = self.deathTimer - dt
+		if self.deathTimer <= 0 then
+			scene.startTimer = 0.01
+		end
 	end
 end
 
