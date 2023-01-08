@@ -54,6 +54,12 @@ function love.draw()
 	scene:draw()
 end
 
+function love.keypressed(key)
+	if scene.currentBuilding then
+		scene:keypressed(key)
+	end
+end
+
 function gradientMesh(dir, ...)
     -- Check for direction
     local isHorizontal = true

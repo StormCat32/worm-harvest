@@ -18,6 +18,15 @@ Build = {
 	panTimer = 1,
 	panTimerMax = 1,
 	panH = 240,
+	pan2Timer = 1,
+	pan2TimerMax = 1,
+	
+	buildSpeed = 400,
+	buildingTimer = 0,
+	buildingWaitTime = 0.2,
+	
+	currentBuilding = {},
+	currentLayer = 2,
 }
 
 function Build:new()
@@ -32,6 +41,7 @@ function Build:new()
 	o.backGround = {}
 	
 	o.buildingList = {}
+	o.currentBuilding = {}
 	
 	return o
 end
@@ -48,11 +58,27 @@ function Build:load(worm,buildings)
 		self.worm.points[z].posB.x = self.worm.points[z].posB.x+dif
 	end
 	self.buildingList = buildings
-	love.graphics.setColor(12/255,69/255,43/255)
 	for i,o in pairs(self.buildingList) do
+		local rand = math.random(1,3)
+		if rand == 1 then
+			love.graphics.setColor(43/255,164/255,150/255)
+		elseif rand == 2 then
+			love.graphics.setColor(27/255,110/255,85/255)
+		else
+			love.graphics.setColor(12/255,69/255,43/255)
+		end
 		o:canvasLoad()
-		o.x = self.w/2-o.w/2
-		o.y = 400
+	end
+end
+
+function Build:keypressed(key)
+	if self.pan2Timer <= 0 then
+		if key == "w" or key == "up" then
+			self:changeLayer(self.currentLayer-1)
+		end
+		if key == "s" or key == "down" then
+			self:changeLayer(self.currentLayer+1)
+		end
 	end
 end
 
@@ -69,8 +95,68 @@ function Build:update(dt)
 		if self.panTimer < 0 then
 			self.panTimer = 0
 			self.animationBegin = true
+			for i,o in pairs(self.buildingList) do
+				o.x = self.w/2-o.w/2
+				o.y = self.worm.y
+				o.dirx = math.random(-0.4,0.4)
+				o.diry = -math.random(0.8,1.2)
+				local ang = math.atan2(o.diry,o.dirx)
+				o.dirx = math.cos(ang)
+				o.diry = math.sin(ang)
+			end
+		end
+	elseif not self.animationDone then
+		self.buildingTimer = self.buildingTimer+dt
+		local above = true
+		for i,o in pairs(self.buildingList) do
+			if o.y+o.h > self.panH then
+				above = false
+			end
+			if self.buildingTimer > self.buildingWaitTime*i then
+				o.x = o.x + o.dirx*self.buildSpeed*dt
+				o.y = o.y + o.diry*self.buildSpeed*dt
+			else
+				break
+			end
+		end
+		if above then
+			self.animationDone = true
+		end
+	elseif self.pan2Timer > 0 then
+		self.pan2Timer = self.pan2Timer - dt
+		if self.pan2Timer <= 0 then
+			self.pan2Timer = 0
+			for i,o in pairs(self.buildingList) do
+				o.x = self.w/2-o.w/2
+				o.y = self.y-o.h
+			end
+			self.currentBuilding = self.buildingList[1]
+			self:changeLayer(2)
+		end
+	else
+		if self.currentBuilding.x < 0 then
+			self.currentBuilding.x = 0
+		elseif self.currentBuilding.x+self.currentBuilding.w > self.w then
+			self.currentBuilding.x = self.w-self.currentBuilding.w
 		end
 	end
+end
+
+function Build:changeLayer(layer)
+	self.currentLayer = layer
+	if self.currentLayer > 3 then
+		self.currentLayer = 3
+	elseif self.currentLayer < 1 then
+		self.currentLayer = 1
+	end
+	if self.currentLayer == 1 then
+		love.graphics.setColor(43/255,164/255,150/255)
+	elseif self.currentLayer == 2 then
+		love.graphics.setColor(27/255,110/255,85/255)
+	else
+		love.graphics.setColor(12/255,69/255,43/255)
+	end
+	self.currentBuilding:canvasLoad()
 end
 
 function Build:draw()
@@ -79,26 +165,53 @@ function Build:draw()
 	
 	local camOff = -self.worm.y+self.screenh/2
 	camOff = math.lerp(camOff,-self.panH,1-self.panTimer/self.panTimerMax)
+	if self.animationDone then
+		camOff = math.lerp(-self.panH,0,1-self.pan2Timer/self.pan2TimerMax)
+	end
 	
-	love.graphics.translate(0,math.floor(camOff*3/4))
+	love.graphics.translate(self.w/8,math.floor(camOff*3/4))
 	love.graphics.scale(3/4,3/4)
 	love.graphics.setColor(43/255,164/255,150/255)
-	love.graphics.rectangle("fill",0,self.y,self.w*2,self.h*20)
+	love.graphics.rectangle("fill",-self.w/2,self.y,self.w*2,self.h*20)
+	for i,o in pairs(self.backBackBuildings) do
+		o:buildDraw()
+	end
+	if self.pan2Timer <= 0 then
+		if self.currentLayer == 1 then
+			self.currentBuilding:buildDraw()
+		end
+	end
 	love.graphics.origin()
 	
-	love.graphics.translate(0,math.floor(camOff*5/6))
+	love.graphics.translate(self.w/12,math.floor(camOff*5/6))
 	love.graphics.scale(5/6,5/6)
 	love.graphics.setColor(27/255,110/255,85/255)
-	love.graphics.rectangle("fill",0,self.y,self.w*2,self.h*20)
+	love.graphics.rectangle("fill",-self.w/2,self.y,self.w*2,self.h*20)
+	for i,o in pairs(self.backBuildings) do
+		o:buildDraw()
+	end
+	if self.pan2Timer <= 0 then
+		if self.currentLayer == 2 then
+			self.currentBuilding:buildDraw()
+		end
+	end
 	love.graphics.origin()
 	
 	love.graphics.translate(0,math.floor(camOff))
 	love.graphics.setColor(12/255,69/255,43/255)
-	love.graphics.rectangle("fill",0,self.y,self.w*2,self.h*20)
+	love.graphics.rectangle("fill",-self.w/2,self.y,self.w*2,self.h*20)
+	for i,o in pairs(self.buildings) do
+		o:buildDraw()
+	end
+	if self.pan2Timer <= 0 then
+		if self.currentLayer == 3 then
+			self.currentBuilding:buildDraw()
+		end
+	end
 	
-	if self.animationBegin then
+	if self.animationBegin and not self.animationDone then
 		for i,o in pairs(self.buildingList) do
-			o:draw()
+			o:buildDraw()
 		end
 	end
 	

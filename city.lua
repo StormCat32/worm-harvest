@@ -55,12 +55,12 @@ City = {
 	startTimer = 3,
 	startTimerMax = 3,
 	
-	winTimer = 7,
-	winTimerMax = 7,
+	winTimer = 5,
+	winTimerMax = 5,
 	
 	backGround = {},
 	
-	maxPixelCount = 30,
+	maxPixelCount = 120,
 }
 
 function City:new()
@@ -664,6 +664,7 @@ end
 function Building:canvasLoad()
 	local colour = {love.graphics.getColor()}
 	love.graphics.setCanvas({self.startCanvas,stencil=true})
+		love.graphics.clear()
 		love.graphics.stencil(function () for i,o in pairs(self.features) do
 											love.graphics.polygon("fill",o.poly)
 										end end,
@@ -675,6 +676,7 @@ function Building:canvasLoad()
 
 		love.graphics.setStencilTest()
 	love.graphics.setCanvas(self.canvas)
+		love.graphics.clear()
 		love.graphics.setColor(1,1,1)
 		love.graphics.draw(self.startCanvas)
 	love.graphics.setCanvas()
@@ -698,6 +700,11 @@ function Building:draw()
 	love.graphics.setShader(mask_shader)
 	love.graphics.draw(self.canvas,self.x,self.y)
 	love.graphics.setShader()
+end
+
+function Building:buildDraw()
+	love.graphics.setColor(1,1,1)
+	love.graphics.draw(self.canvas,self.x,self.y)
 end
 
 Bomb = {
