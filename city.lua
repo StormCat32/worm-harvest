@@ -169,17 +169,17 @@ function City:update(dt)
 		self.endTimer = self.endTimer - dt
 		if self.player.dead == false then
 			if self.endTimer <= 0 then --bombs start to drop on player's level
-				self.backBackBombTimer = self.backBackBombTimer - dt
-				if self.backBackBombTimer <= self.endTimerMax/4 then
+				self.bombTimer = self.bombTimer - dt
+				if self.bombTimer <= self.endTimerMax/4 then
 					table.insert(self.backBackBombs,Bomb:new(1))
-					self.backBackBombTimer = self.bombTimerMax
+					self.bombTimer = self.bombTimerMax
 				end
 			end
 			if self.endTimer <= self.endTimerMax/2 then --bombs on first background
-				self.backBackBombTimer = self.backBackBombTimer - dt
-				if self.backBackBombTimer <= 0 then
+				self.backBombTimer = self.backBombTimer - dt
+				if self.backBombTimer <= 0 then
 					table.insert(self.backBackBombs,Bomb:new(2))
-					self.backBackBombTimer = self.bombTimerMax*3/4
+					self.backBombTimer = self.bombTimerMax*3/4
 				end
 			end
 			if self.endTimer <= self.endTimerMax*3/4 then --bombs on second background
@@ -492,6 +492,18 @@ end
 
 function City:leave()
 	self.won = true
+
+	o.buildings = {}
+	o.backBuildings = {}
+	o.backBackBuildings = {}
+	
+	o.bombs = {}
+	o.backBombs = {}
+	o.backBackBombs = {}
+	
+	o.explode = {}
+	o.backExplode = {}
+	o.backBackExplode = {}
 	--screen pans down into the ground to show the player tunneling left
 	--the ground slowly changes colour to city building green
 	--after the colour change is complete, the worm tunnels up until breaching the surface and the buildings
@@ -651,8 +663,6 @@ function Bomb:new(layer)
 	o.speed = math.random(200,600)
 	
 	o.bombR = math.random(80,160)
-	
-	o.dirx = math.random(-100,100)/100
 	
 	o.layer = layer
 	

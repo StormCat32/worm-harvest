@@ -131,24 +131,26 @@ function Worm:move(dt)
 			self.diry = self.diry - scene.grav*dt*4
 		else
 			if scene.won then
-				if self.y > scene.h + self.h*2+20 then
-					if self.dirx - dt / self.accel * self.speed > -1 * self.speed then
-						self.dirx = self.dirx - dt / self.accel * self.speed
-						if self.dirx < -1 * self.speed then
-							self.dirx = -1 * self.speed
-						end
+				if self.dirx - dt / self.accel * self.speed > -1 * self.speed then
+					self.dirx = self.dirx - dt / self.accel * self.speed
+					if self.dirx < -1 * self.speed then
+						self.dirx = -1 * self.speed
 					end
+				end
+				if self.diry > 0 then
+					self.diry = self.diry - dt / self.decel * self.speed
+					if self.diry < 0 then
+						self.diry = 0
+					end
+				elseif self.diry < 0 then
+					self.diry = self.diry + dt / self.decel * self.speed
 					if self.diry > 0 then
-						self.diry = self.diry - dt / self.decel * self.speed
-						if self.diry < 0 then
-							self.diry = 0
-						end
-					elseif self.diry < 0 then
-						self.diry = self.diry + dt / self.decel * self.speed
-						if self.diry > 0 then
-							self.diry = 0
-						end
+						self.diry = 0
 					end
+				end
+			else
+				if self.y > scene.h + self.h*2+20 then
+					scene:leave()
 				else
 					if self.diry + dt / self.accel * self.speed < self.speed * 1 then
 						self.diry = self.diry + dt / self.accel * self.speed
@@ -168,8 +170,6 @@ function Worm:move(dt)
 						end
 					end
 				end
-			else
-				scene:leave()
 			end
 		end
 	elseif self.y < scene.y or hitCrater then
