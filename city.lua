@@ -61,6 +61,8 @@ City = {
 	backGround = {},
 	
 	maxPixelCount = 120,
+	
+	explodeSound = love.audio.newSource("explode.wav","static"),
 }
 
 function City:new()
@@ -96,7 +98,7 @@ function City:load()
 	self.camera = Camera:new()
 	self.camera.x = self.player.x-self.camera.w/2
 	self.camera.y = self.h-self.camera.h-2000*self.startTimer/self.startTimerMax
-	local buildPos = math.random(self.player.w+1,self.sBuildDif)
+	local buildPos = math.random(30,self.sBuildDif)
 	while buildPos < self.w - self.sBuildWmax do
 		if buildPos < self.w/3 or buildPos > self.w*2/3 then
 			local hh = math.random(self.sBuildHmin,self.sBuildH)
@@ -485,6 +487,7 @@ function City:drawForegrounds()
 end
 
 function City:explodeBomb(x,y,r,layer)
+	self.explodeSound:play()
 	if layer == 1 then
 		table.insert(self.explode,Explosion:new(x,y,r))
 		if checkCircleCollision(x,y,r,self.player.x,self.player.y,1) then

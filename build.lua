@@ -38,6 +38,10 @@ Build = {
 	currentTimerMax = 0.5,
 	
 	deathCount = 0,
+	
+	placeSound = love.audio.newSource("place.wav","static"),
+	blockedSound = love.audio.newSource("block.wav","static"),
+	moveSound = love.audio.newSource("move.wav","static"),
 }
 
 function Build:new()
@@ -104,17 +108,21 @@ function Build:keypressed(key)
 		if not self.finished and not self.gameOver then
 			if key == "w" or key == "up" then
 				self:changeLayer(self.currentLayer-1)
+				self.moveSound:play()
 			end
 			if key == "s" or key == "down" then
 				self:changeLayer(self.currentLayer+1)
+				self.moveSound:play()
 			end
 			if key == "space" or key == "return" then
 				if self.currentLayer == 1 then
 					for i,o in pairs(self.backBackBuildings) do
 						if checkCollision(o.x,o.y,o.w,o.h,self.currentBuilding.x,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h) then
+							self.blockedSound:play()
 							return
 						end
 					end
+					self.placeSound:play()
 					table.insert(self.backBackBuildings,self.currentBuilding)
 					if #self.buildingList > 0 then
 						self:newBuilding()
@@ -125,9 +133,11 @@ function Build:keypressed(key)
 				elseif self.currentLayer == 2 then
 					for i,o in pairs(self.backBuildings) do
 						if checkCollision(o.x,o.y,o.w,o.h,self.currentBuilding.x,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h) then
+							self.blockedSound:play()
 							return
 						end
 					end
+					self.placeSound:play()
 					table.insert(self.backBuildings,self.currentBuilding)
 					if #self.buildingList > 0 then
 						self:newBuilding()
@@ -138,9 +148,11 @@ function Build:keypressed(key)
 				elseif self.currentLayer == 3 then
 					for i,o in pairs(self.buildings) do
 						if checkCollision(o.x,o.y,o.w,o.h,self.currentBuilding.x,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h) then
+							self.blockedSound:play()
 							return
 						end
 					end
+					self.placeSound:play()
 					table.insert(self.buildings,self.currentBuilding)
 					if #self.buildingList > 0 then
 						self:newBuilding()
@@ -175,11 +187,8 @@ function Build:update(dt)
 			for i,o in pairs(self.buildingList) do
 				o.x = self.w/2-o.w/2
 				o.y = self.worm.y
-				o.dirx = math.random(-0.4,0.4)
-				o.diry = -math.random(0.8,1.2)
-				local ang = math.atan2(o.diry,o.dirx)
-				o.dirx = math.cos(ang)
-				o.diry = math.sin(ang)
+				o.dirx = 0
+				o.diry = -1
 			end
 		end
 	elseif not self.animationDone then
@@ -320,7 +329,7 @@ function Build:newBuilding()
 			end
 		end
 		score = 5*count1+10*count2+15*count3+count4-10*self.deathCount
-		self.gameOverMessage = "Salvage City Score\nWindows - 1 x "..count4.."\nHouses - 5 x "..count1.."\nSheared Skyscrapers - 10 x "..count2.."\nTriangle Viewports - 15 x "..count3.."\nNumber of Deaths - -10 x "..self.deathCount.."\n\nFinal Score - "..score
+		self.gameOverMessage = "Salvage City Score\nWindows: "..count4.." x 1\nHouses: "..count1.." x 5\nSheared Skyscrapers: "..count2.." x 10\nTriangle Viewports: "..count3.." x 15\nDeaths: "..self.deathCount.." x -10\n\nFinal Score: "..score
 	end
 end
 
