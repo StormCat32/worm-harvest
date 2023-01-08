@@ -106,13 +106,20 @@ function Worm:update(dt)
 end
 
 function Worm:move(dt)
+	local hitCrater = false
+	for i,o in pairs(scene.explode) do
+		if checkCircleCollision(o.x,o.y,o.r,self.x,self.y,1) then
+			hitCrater = true
+			break
+		end
+	end
 	if self.y > scene.h then
 		if scene.endTimer > 0 then
 			self.diry = self.diry - scene.grav*dt*4
 		else
 			self.diry = self.diry + scene.grav*dt*4
 		end
-	elseif self.y < scene.y then
+	elseif self.y < scene.y or hitCrater then
 		self.diry = self.diry + scene.grav*dt
 	else
 		local dirx = 0
