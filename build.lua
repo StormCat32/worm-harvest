@@ -48,7 +48,8 @@ end
 
 function Build:load(worm,buildings)
 	self.backGround = gradientMesh("vertical",{149/255,228/255,241/255},{224/255,255/255,255/255})
-
+	
+	self.worm = {}
 	self.worm = worm
 	local dif = self.worm.x
 	self.worm.x = self.w/2
@@ -57,6 +58,10 @@ function Build:load(worm,buildings)
 		self.worm.points[z].pos.x = self.worm.points[z].pos.x+dif
 		self.worm.points[z].posB.x = self.worm.points[z].posB.x+dif
 	end
+	
+	self.buildingList = {}
+	self.currentBuilding = {}
+	self.currentLayer = 2
 	self.buildingList = buildings
 	for i,o in pairs(self.buildingList) do
 		local rand = math.random(1,3)
@@ -69,6 +74,12 @@ function Build:load(worm,buildings)
 		end
 		o:canvasLoad()
 	end
+	
+	self.animationStart = false
+	self.animationBegin = false
+	self.animationDone = false
+	self.panTimer = self.panTimerMax
+	self.pan2Timer = self.pan2TimerMax
 end
 
 function Build:keypressed(key)
@@ -78,6 +89,22 @@ function Build:keypressed(key)
 		end
 		if key == "s" or key == "down" then
 			self:changeLayer(self.currentLayer+1)
+		end
+		if key == "space" or key == "return" then
+			if self.currentLayer == 1 then
+				table.insert(self.backBackBuildings,self.currentBuilding)
+			elseif self.currentLayer == 2 then
+				table.insert(self.backBuildings,self.currentBuilding)
+			elseif self.currentLayer == 3 then
+				table.insert(self.buildings,self.currentBuilding)
+			end
+			if #self.buildingList > 0 then
+				self.currentBuilding = self.buildingList[1]
+				self:changeLayer(self.currentLayer)
+				table.remove(self.buildingList,1)
+			else
+				self.finished = true
+			end
 		end
 	end
 end
@@ -133,7 +160,15 @@ function Build:update(dt)
 			self.currentBuilding = self.buildingList[1]
 			self:changeLayer(2)
 		end
+	elseif self.finished then
+		
 	else
+		if love.keyboard.isDown("left","a") then
+			self.currentBuilding.x = self.currentBuilding.x-self.buildSpeed*dt
+		end
+		if love.keyboard.isDown("right","d") then
+			self.currentBuilding.x = self.currentBuilding.x+self.buildSpeed*dt
+		end
 		if self.currentBuilding.x < 0 then
 			self.currentBuilding.x = 0
 		elseif self.currentBuilding.x+self.currentBuilding.w > self.w then
@@ -176,7 +211,7 @@ function Build:draw()
 	for i,o in pairs(self.backBackBuildings) do
 		o:buildDraw()
 	end
-	if self.pan2Timer <= 0 then
+	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 1 then
 			self.currentBuilding:buildDraw()
 		end
@@ -190,7 +225,7 @@ function Build:draw()
 	for i,o in pairs(self.backBuildings) do
 		o:buildDraw()
 	end
-	if self.pan2Timer <= 0 then
+	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 2 then
 			self.currentBuilding:buildDraw()
 		end
@@ -203,7 +238,7 @@ function Build:draw()
 	for i,o in pairs(self.buildings) do
 		o:buildDraw()
 	end
-	if self.pan2Timer <= 0 then
+	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 3 then
 			self.currentBuilding:buildDraw()
 		end

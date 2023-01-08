@@ -42,6 +42,7 @@ require "build"
 
 function love.load()
 	math.randomseed(os.time())
+	cityBuilding = Build:new()
 	scene = City:new()
 	scene:load()
 end

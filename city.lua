@@ -565,7 +565,7 @@ function City:change()
 			table.remove(self.buildings, i)
 		end
 	end
-	scene = Build:new()
+	scene = cityBuilding
 	scene:load(self.player,self.buildings)
 end
 
