@@ -76,6 +76,10 @@ Worm = {
 	
 	damping = 0.75,
 	numIter = 100,
+	
+	dead = false,
+	deathTimer = 5,
+	deathTimerMax = 5,
 }
 
 function Worm:new()
@@ -87,6 +91,8 @@ function Worm:new()
 end
 
 function Worm:load(x,y)
+	self.deathTimer = self.deathTimerMax
+
 	self.points = {}
 	self.sticks = {}
 	table.insert(self.points,Points:new(x,y,true,self.w/2))
@@ -101,8 +107,12 @@ function Worm:load(x,y)
 end
 
 function Worm:update(dt)
-	self:move(dt)
-	self:bodyUpdate(dt)
+	if not self.dead then
+		self:move(dt)
+		self:bodyUpdate(dt)
+	else
+		self.deathTimer = self.deathTimer - dt
+	end
 end
 
 function Worm:move(dt)
@@ -117,6 +127,9 @@ function Worm:move(dt)
 		if scene.endTimer > 0 then
 			self.diry = self.diry - scene.grav*dt*4
 		else
+			if self.y > scene.h + self.h+20 then
+				scene:leave()
+			end
 			self.diry = self.diry + scene.grav*dt*4
 		end
 	elseif self.y < scene.y or hitCrater then
@@ -257,7 +270,40 @@ end
 
 function Worm:draw()
 	love.graphics.setColor(39/255,6/255,0/255)
+	if self.dead then
+		if self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(0) then
+			love.graphics.setColor(39/255,6/255,0/255)
+		elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(0.2) then
+			love.graphics.setColor(1,1,1)
+		elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(0.5) then
+			love.graphics.setColor(254/255,223/255,96/255)
+		elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(1) then
+			love.graphics.setColor(254/255,157/255,0/255)
+		else
+			love.graphics.setColor(1,1,1,0)
+		end
+	end
+	local o = self.sticks[1]
+	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
+	for z = 1,8 do
+		love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z-1)/8),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z-1)/8),
+									 o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z)/8),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z)/8),
+									 o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z-0.5)/8)-12*math.cos(-ang),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z-0.5)/8)-12*math.sin(-ang))
+	end
 	for z = 1,#self.sticks-1 do
+		if self.dead then
+			if self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(z-1) then
+				love.graphics.setColor(39/255,6/255,0/255)
+			elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(z-0.8) then
+				love.graphics.setColor(1,1,1)
+			elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(z-0.5) then
+				love.graphics.setColor(254/255,223/255,96/255)
+			elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(z) then
+				love.graphics.setColor(254/255,157/255,0/255)
+			else
+				love.graphics.setColor(1,1,1,0)
+			end
+		end
 		local o = self.sticks[z]
 		local p = self.sticks[z+1]
 		local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
@@ -267,18 +313,24 @@ function Worm:draw()
 									 o.pB.pos.x+math.sin(ang2)*o.pB.w,o.pB.pos.y+math.cos(ang2)*o.pB.w,
 									 o.pB.pos.x-math.sin(ang2)*o.pB.w,o.pB.pos.y-math.cos(ang2)*o.pB.w)
 	end
+	if self.dead then
+		if self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(#self.sticks-1) then
+			love.graphics.setColor(39/255,6/255,0/255)
+		elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(#self.sticks-0.8) then
+			love.graphics.setColor(1,1,1)
+		elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(#self.sticks-0.5) then
+			love.graphics.setColor(254/255,223/255,96/255)
+		elseif self.deathTimer > self.deathTimerMax-self.deathTimerMax/#self.sticks*(#self.sticks) then
+			love.graphics.setColor(254/255,157/255,0/255)
+		else
+			love.graphics.setColor(1,1,1,0)
+		end
+	end
 	local o = self.sticks[#self.sticks]
 	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
 	love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w,o.pA.pos.y-math.cos(ang)*o.pA.w,
 								 o.pA.pos.x+math.sin(ang)*o.pA.w,o.pA.pos.y+math.cos(ang)*o.pA.w,
 								 o.pB.pos.x,o.pB.pos.y)
-	local o = self.sticks[1]
-	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
-	for z = 1,8 do
-		love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z-1)/8),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z-1)/8),
-									 o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z)/8),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z)/8),
-									 o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z-0.5)/8)-12*math.cos(-ang),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z-0.5)/8)-12*math.sin(-ang))
-	end
 end
 
 function Worm:eatDraw()

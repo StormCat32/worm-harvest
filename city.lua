@@ -25,6 +25,11 @@ City = {
 	backExplode = {},
 	backBackExplode = {},
 	
+	bombTimer = 0,
+	backBombTimer = 0,
+	backBackBombTimer = 0,
+	bombTimerMax = 0.5,
+	
 	y = 600,
 	w = 8*love.graphics.getWidth(),
 	h = 950,
@@ -72,9 +77,9 @@ end
 
 function City:load()
 	self.endTimer = self.endTimerMax
-
+	
 	self.player = Worm:new()
-	self.player:load(0,800)
+	self.player:load(0,self.h+50)
 	self.camera = Camera:new()
 	local buildPos = math.random(self.player.w+1,self.sBuildDif)
 	while buildPos < self.w - self.sBuildWmax do
@@ -158,13 +163,25 @@ end
 function City:update(dt)
 	self.endTimer = self.endTimer - dt
 	if self.endTimer <= 0 then --bombs start to drop on player's level
-		table.insert(self.bombs,Bomb:new(1))
+		self.backBackBombTimer = self.backBackBombTimer - dt
+		if self.backBackBombTimer <= 0 then
+			table.insert(self.backBackBombs,Bomb:new(1))
+			self.backBackBombTimer = self.bombTimerMax
+		end
 	end
 	if self.endTimer <= self.endTimerMax/3 then --bombs on first background
-		table.insert(self.backBombs,Bomb:new(2))
+		self.backBackBombTimer = self.backBackBombTimer - dt
+		if self.backBackBombTimer <= 0 then
+			table.insert(self.backBackBombs,Bomb:new(2))
+			self.backBackBombTimer = self.bombTimerMax*3/4
+		end
 	end
 	if self.endTimer <= self.endTimerMax*2/3 then --bombs on second background
-		table.insert(self.backBackBombs,Bomb:new(3))
+		self.backBackBombTimer = self.backBackBombTimer - dt
+		if self.backBackBombTimer <= 0 then
+			table.insert(self.backBackBombs,Bomb:new(3))
+			self.backBackBombTimer = self.bombTimerMax/2
+		end
 	end
 	self.player:update(dt)
 	self.camera:update(dt)
@@ -421,6 +438,9 @@ end
 function City:explodeBomb(x,y,r,layer)
 	if layer == 1 then
 		table.insert(self.explode,Explosion:new(x,y,r))
+		if checkCircleCollision(x,y,r,self.player.x,self.player.y,1) then
+			self:die()
+		end
 	elseif layer == 2 then
 		for i,o in pairs(self.backBuildings) do
 			love.graphics.setCanvas({o.canvas,stencil=true})
@@ -442,6 +462,21 @@ function City:explodeBomb(x,y,r,layer)
 		end
 		table.insert(self.backBackExplode,Explosion:new(x,y,r))
 	end
+end
+
+function City:die()
+	self.player.dead = true
+	--player freeze frames wherever they currently are
+	--segments all do the colour change flash thing that the explosions do in order
+	--after all segments have dissapeared game fades to city brown
+end
+
+function City:leave()
+	--screen pans down into the ground to show the player tunneling left
+	--the ground slowly changes colour to city building green
+	--after the colour change is complete, the worm tunnels up until breaching the surface and the buildings
+	--they collected get spat out into a sidebar and the worm tunnels back down
+	--city building commences
 end
 
 Building = {
