@@ -130,10 +130,47 @@ function Worm:move(dt)
 		if scene.endTimer > 0 then
 			self.diry = self.diry - scene.grav*dt*4
 		else
-			if self.y > scene.h + self.h+20 then
+			if scene.won then
+				if self.y > scene.h + self.h*2+20 then
+					if self.dirx - dt / self.accel * self.speed > -1 * self.speed then
+						self.dirx = self.dirx - dt / self.accel * self.speed
+						if self.dirx < -1 * self.speed then
+							self.dirx = -1 * self.speed
+						end
+					end
+					if self.diry > 0 then
+						self.diry = self.diry - dt / self.decel * self.speed
+						if self.diry < 0 then
+							self.diry = 0
+						end
+					elseif self.diry < 0 then
+						self.diry = self.diry + dt / self.decel * self.speed
+						if self.diry > 0 then
+							self.diry = 0
+						end
+					end
+				else
+					if self.diry + dt / self.accel * self.speed < self.speed * 1 then
+						self.diry = self.diry + dt / self.accel * self.speed
+						if self.diry > self.speed * 1 then
+							self.diry = self.speed * 1
+						end
+					end
+					if self.dirx > 0 then
+						self.dirx = self.dirx - dt / self.decel * self.speed
+						if self.dirx < 0 then
+							self.dirx = 0
+						end
+					elseif self.dirx < 0 then
+						self.dirx = self.dirx + dt / self.decel * self.speed
+						if self.dirx > 0 then
+							self.dirx = 0
+						end
+					end
+				end
+			else
 				scene:leave()
 			end
-			self.diry = self.diry + scene.grav*dt*4
 		end
 	elseif self.y < scene.y or hitCrater then
 		self.diry = self.diry + scene.grav*dt
@@ -383,8 +420,10 @@ function Camera:update(dt)
 		self.y = 0
 		self.y = self.y + scene.player.y%1
 	end
-	if self.y + self.h > scene.h then
-		self.y = scene.h-self.h
-		self.y = self.y + scene.player.y%1 -1
+	if scene.endTimer > 0 then
+		if self.y + self.h > scene.h then
+			self.y = scene.h-self.h
+			self.y = self.y + scene.player.y%1 -1
+		end
 	end
 end

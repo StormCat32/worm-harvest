@@ -394,7 +394,7 @@ function City:drawForegrounds()
 	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
-	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h*20)
 	love.graphics.setStencilTest()
 	
 	for i,o in pairs(self.buildings) do
@@ -414,7 +414,7 @@ function City:drawForegrounds()
 	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
-	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h*20)
 	love.graphics.setStencilTest()
 	
 	for i,o in pairs(self.buildings) do
@@ -434,7 +434,7 @@ function City:drawForegrounds()
 	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
-	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	love.graphics.rectangle("fill",0,self.y,self.w,self.h*20)
 	love.graphics.setStencilTest()
 	
 	for i,o in pairs(self.buildings) do
@@ -491,6 +491,7 @@ function City:die()
 end
 
 function City:leave()
+	self.won = true
 	--screen pans down into the ground to show the player tunneling left
 	--the ground slowly changes colour to city building green
 	--after the colour change is complete, the worm tunnels up until breaching the surface and the buildings
@@ -650,6 +651,8 @@ function Bomb:new(layer)
 	o.speed = math.random(200,600)
 	
 	o.bombR = math.random(80,160)
+	
+	o.dirx = math.random(-100,100)/100
 	
 	o.layer = layer
 	
