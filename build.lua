@@ -108,7 +108,7 @@ function Build:keypressed(key)
 						self.currentBuilding = self.buildingList[1]
 						table.remove(self.buildingList,1)
 						self.currentTimer = self.currentTimerMax
-						self:changeLayer(self.currentLayer)
+						self:changeLayer(math.random(1,3))
 					else
 						self.finished = true
 					end
@@ -118,7 +118,7 @@ function Build:keypressed(key)
 						self.currentBuilding = self.buildingList[1]
 						table.remove(self.buildingList,1)
 						self.currentTimer = self.currentTimerMax
-						self:changeLayer(self.currentLayer)
+						self:changeLayer(math.random(1,3))
 					else
 						self.finished = true
 					end
@@ -128,7 +128,7 @@ function Build:keypressed(key)
 						self.currentBuilding = self.buildingList[1]
 						self.currentTimer = self.currentTimerMax
 						table.remove(self.buildingList,1)
-						self:changeLayer(self.currentLayer)
+						self:changeLayer(math.random(1,3))
 					else
 						self.finished = true
 					end
