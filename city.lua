@@ -171,14 +171,14 @@ function City:update(dt)
 			if self.endTimer <= 0 then --bombs start to drop on player's level
 				self.bombTimer = self.bombTimer - dt
 				if self.bombTimer <= self.endTimerMax/4 then
-					table.insert(self.backBackBombs,Bomb:new(1))
+					table.insert(self.bombs,Bomb:new(1))
 					self.bombTimer = self.bombTimerMax
 				end
 			end
 			if self.endTimer <= self.endTimerMax/2 then --bombs on first background
 				self.backBombTimer = self.backBombTimer - dt
 				if self.backBombTimer <= 0 then
-					table.insert(self.backBackBombs,Bomb:new(2))
+					table.insert(self.backBombs,Bomb:new(2))
 					self.backBombTimer = self.bombTimerMax*3/4
 				end
 			end
@@ -493,17 +493,17 @@ end
 function City:leave()
 	self.won = true
 
-	o.buildings = {}
-	o.backBuildings = {}
-	o.backBackBuildings = {}
+	self.buildings = {}
+	self.backBuildings = {}
+	self.backBackBuildings = {}
 	
-	o.bombs = {}
-	o.backBombs = {}
-	o.backBackBombs = {}
+	self.bombs = {}
+	self.backBombs = {}
+	self.backBackBombs = {}
 	
-	o.explode = {}
-	o.backExplode = {}
-	o.backBackExplode = {}
+	self.explode = {}
+	self.backExplode = {}
+	self.backBackExplode = {}
 	--screen pans down into the ground to show the player tunneling left
 	--the ground slowly changes colour to city building green
 	--after the colour change is complete, the worm tunnels up until breaching the surface and the buildings
