@@ -10,7 +10,7 @@ local mask_shader = love.graphics.newShader[[
 
 City = {
 	endTimer = 0,
-	endTimerMax = 90,
+	endTimerMax = 60,
 
 	player = {},
 	buildings = {},
@@ -31,7 +31,7 @@ City = {
 	bombTimerMax = 0.5,
 	
 	y = 600,
-	w = 8*love.graphics.getWidth(),
+	w = 6*love.graphics.getWidth(),
 	h = 950,
 	
 	cBuildDif = 80,
