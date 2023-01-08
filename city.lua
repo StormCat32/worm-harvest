@@ -354,37 +354,61 @@ end
 
 function City:drawForegrounds()
 	love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
+	
+	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	love.graphics.setStencilTest()
+	
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
 	love.graphics.setColor(83/255,27/255,2/255)
 	for i,o in pairs(self.bombs) do
+		o:draw()
+	end
+	for i,o in pairs(self.explode) do
 		o:draw()
 	end
 	love.graphics.origin()
 	
 	love.graphics.translate(-math.floor(self.camera.x-self.w),-math.floor(self.camera.y))
+	
+	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	love.graphics.setStencilTest()
+	
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
 	love.graphics.setColor(83/255,27/255,2/255)
 	for i,o in pairs(self.bombs) do
+		o:draw()
+	end
+	for i,o in pairs(self.explode) do
 		o:draw()
 	end
 	love.graphics.origin()
 	
 	love.graphics.translate(-math.floor(self.camera.x+self.w),-math.floor(self.camera.y))
+	
+	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
+	love.graphics.setStencilTest()
+	
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
 	love.graphics.setColor(83/255,27/255,2/255)
 	for i,o in pairs(self.bombs) do
+		o:draw()
+	end
+	for i,o in pairs(self.explode) do
 		o:draw()
 	end
 	love.graphics.origin()
@@ -396,7 +420,7 @@ end
 
 function City:explodeBomb(x,y,r,layer)
 	if layer == 1 then
-		
+		table.insert(self.explode,Explosion:new(x,y,r))
 	elseif layer == 2 then
 		for i,o in pairs(self.backBuildings) do
 			love.graphics.setCanvas({o.canvas,stencil=true})
