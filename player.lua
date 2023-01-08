@@ -107,12 +107,28 @@ function Worm:load(x,y)
 end
 
 function Worm:buildUpdate(dt)
-	if self.diry + dt / self.accel * self.speed > self.speed * -1 then
-		self.diry = self.diry + dt / self.accel * self.speed * -1
-		if self.diry < self.speed * -1 then
-			self.diry = self.speed * -1
+	if self.y < scene.y + 500 then
+		if self.diry > 0 then
+			self.diry = self.diry - dt / self.decel * self.speed
+			if self.diry < 0 then
+				self.diry = 0
+			end
+		elseif self.diry < 0 then
+			self.diry = self.diry + dt / self.decel * self.speed
+			if self.diry > 0 then
+				self.diry = 0
+			end
+		end
+	else
+		if self.diry + dt / self.accel * self.speed > self.speed * -1 then
+			self.diry = self.diry + dt / self.accel * self.speed * -1
+			if self.diry < self.speed * -1 then
+				self.diry = self.speed * -1
+			end
 		end
 	end
+	self.x = self.x + self.dirx*dt
+	self.y = self.y + self.diry*dt
 	self:bodyUpdate(dt)
 end
 
@@ -406,6 +422,32 @@ function Worm:draw()
 		else
 			love.graphics.setColor(1,1,1,0)
 		end
+	end
+	local o = self.sticks[#self.sticks]
+	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
+	love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w,o.pA.pos.y-math.cos(ang)*o.pA.w,
+								 o.pA.pos.x+math.sin(ang)*o.pA.w,o.pA.pos.y+math.cos(ang)*o.pA.w,
+								 o.pB.pos.x,o.pB.pos.y)
+end
+
+function Worm:buildDraw()
+	love.graphics.setColor(1/255,33/255,13/255)
+	local o = self.sticks[1]
+	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
+	for z = 1,8 do
+		love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z-1)/8),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z-1)/8),
+									 o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z)/8),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z)/8),
+									 o.pA.pos.x-math.sin(ang)*o.pA.w+math.sin(ang)*o.pA.w*2*((z-0.5)/8)-12*math.cos(-ang),o.pA.pos.y-math.cos(ang)*o.pA.w+math.cos(ang)*o.pA.w*2*((z-0.5)/8)-12*math.sin(-ang))
+	end
+	for z = 1,#self.sticks-1 do
+		local o = self.sticks[z]
+		local p = self.sticks[z+1]
+		local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)
+		local ang2 = -math.atan2(p.pB.pos.y-p.pA.pos.y,p.pB.pos.x-p.pA.pos.x)
+		love.graphics.polygon("fill",o.pA.pos.x-math.sin(ang)*o.pA.w,o.pA.pos.y-math.cos(ang)*o.pA.w,
+									 o.pA.pos.x+math.sin(ang)*o.pA.w,o.pA.pos.y+math.cos(ang)*o.pA.w,
+									 o.pB.pos.x+math.sin(ang2)*o.pB.w,o.pB.pos.y+math.cos(ang2)*o.pB.w,
+									 o.pB.pos.x-math.sin(ang2)*o.pB.w,o.pB.pos.y-math.cos(ang2)*o.pB.w)
 	end
 	local o = self.sticks[#self.sticks]
 	local ang = -math.atan2(o.pB.pos.y-o.pA.pos.y,o.pB.pos.x-o.pA.pos.x)

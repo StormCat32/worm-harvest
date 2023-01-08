@@ -59,6 +59,8 @@ City = {
 	winTimerMax = 7,
 	
 	backGround = {},
+	
+	maxPixelCount = 30,
 }
 
 function City:new()
@@ -86,7 +88,7 @@ end
 function City:load()
 	self.backGround = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
 
-	self.endTimer = self.endTimerMax
+	self.endTimer = 5
 	self.startTimer = self.startTimerMax
 	
 	self.player = Worm:new()
@@ -521,7 +523,6 @@ function City:leave()
 	
 	self.winTimer = self.winTimerMax
 	
-	self.buildings = {}
 	self.backBuildings = {}
 	self.backBackBuildings = {}
 	
@@ -540,8 +541,32 @@ function City:leave()
 end
 
 function City:change()
+	for i,o in pairs(self.buildings) do
+		local image = o.canvas:newImageData() -- Checking the level
+		local pixelCount = 0
+		for x = 0, image:getWidth()-1 do -- Actual making the level
+			for y = 0, image:getHeight()-1 do
+				local r, g, b, a = image:getPixel(x,y) -- Looking at the pixels in the picture to make the level
+				if r > 50/255 then
+					if a > 0 then
+						pixelCount = pixelCount + 1
+					end
+				end
+			end
+		end
+		if pixelCount > self.maxPixelCount then
+			o.remove = true
+		else
+			o.remove = false
+		end
+	end
+	for i=#self.buildings,1,-1 do
+		if self.buildings[i].remove then
+			table.remove(self.buildings, i)
+		end
+	end
 	scene = Build:new()
-	scene:load(self.player)
+	scene:load(self.player,self.buildings)
 end
 
 Building = {
@@ -633,6 +658,10 @@ function Building:load()
 			end
 		end
 	end
+	self:canvasLoad()
+end
+
+function Building:canvasLoad()
 	local colour = {love.graphics.getColor()}
 	love.graphics.setCanvas({self.startCanvas,stencil=true})
 		love.graphics.stencil(function () for i,o in pairs(self.features) do
