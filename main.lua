@@ -27,9 +27,20 @@
 	
 ]]--
 
+local mask_shader = love.graphics.newShader[[
+   vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+      if (Texel(texture, texture_coords).r <= 50.0/255.0) {
+         // a discarded pixel wont be applied as the stencil.
+         discard;
+      }
+      return vec4(Texel(texture, texture_coords));
+   }
+]]
+
 local backGround = {}
 
 function love.load()
+	math.randomseed(os.time())
 	backGround = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
 	scene = City:new()
 	scene:load()
@@ -395,9 +406,9 @@ end
 
 function City:load()
 	self.player = Worm:new()
-	self.player:load(100,100)
+	self.player:load(0,800)
 	self.camera = Camera:new()
-	local buildPos = math.random(0,self.sBuildDif)
+	local buildPos = math.random(self.player.w+1,self.sBuildDif)
 	while buildPos < self.w - self.sBuildWmax do
 		if buildPos < self.w/3 or buildPos > self.w*2/3 then
 			local hh = math.random(self.sBuildHmin,self.sBuildH)
@@ -479,19 +490,22 @@ end
 function City:update(dt)
 	self.player:update(dt)
 	self.camera:update(dt)
+	for i,o in pairs(self.buildings) do
+		o:update(dt)
+	end
 end
 
 function City:draw()
 	love.graphics.translate(0,-math.floor(self.camera.y*1/2))
 	love.graphics.setColor(254/255,223/255,96/255)
 	love.graphics.circle("fill",self.camera.w/2,self.camera.h*2/3,self.camera.w/4)
+	love.graphics.origin()
 	
 	self:drawBackgrounds()
 	self:drawForegrounds()
 end
 
 function City:drawBackgrounds()
-	love.graphics.origin()
 	love.graphics.translate(-math.floor(self.camera.x*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
 	love.graphics.setColor(212/255,109/255,20/255)
@@ -499,8 +513,8 @@ function City:drawBackgrounds()
 	for i,o in pairs(self.backBackBuildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor((self.camera.x-self.w)*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
 	love.graphics.setColor(212/255,109/255,20/255)
@@ -508,8 +522,8 @@ function City:drawBackgrounds()
 	for i,o in pairs(self.backBackBuildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor((self.camera.x+self.w)*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
 	love.graphics.setColor(212/255,109/255,20/255)
@@ -517,8 +531,8 @@ function City:drawBackgrounds()
 	for i,o in pairs(self.backBackBuildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor(self.camera.x*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
 	love.graphics.setColor(170/255,77/255,20/255)
@@ -526,8 +540,8 @@ function City:drawBackgrounds()
 	for i,o in pairs(self.backBuildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor((self.camera.x-self.w)*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
 	love.graphics.setColor(170/255,77/255,20/255)
@@ -535,8 +549,8 @@ function City:drawBackgrounds()
 	for i,o in pairs(self.backBuildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor((self.camera.x+self.w)*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
 	love.graphics.setColor(170/255,77/255,20/255)
@@ -544,36 +558,37 @@ function City:drawBackgrounds()
 	for i,o in pairs(self.backBuildings) do
 		o:draw()
 	end
+	love.graphics.origin()
 end
 
 function City:drawForegrounds()
-	love.graphics.origin()
 	love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor(self.camera.x-self.w),-math.floor(self.camera.y))
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-math.floor(self.camera.x+self.w),-math.floor(self.camera.y))
 	love.graphics.setColor(83/255,27/255,2/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
 	for i,o in pairs(self.buildings) do
 		o:draw()
 	end
-	
 	love.graphics.origin()
+	
 	love.graphics.translate(-self.camera.x,-self.camera.y)
 	self.player:draw()
+	love.graphics.origin()
 end
 
 Building = {
@@ -586,6 +601,7 @@ Building = {
 	
 	features = {},
 	canvas = {},
+	startCanvas = {},
 }
 
 function Building:new(x,w,h,sky,house)
@@ -595,6 +611,7 @@ function Building:new(x,w,h,sky,house)
 	
 	o.features = {}
 	o.canvas = {}
+	o.startCanvas = {}
 	
 	o.w = w
 	o.h = h
@@ -614,6 +631,7 @@ end
 
 function Building:load()
 	self.canvas = love.graphics.newCanvas(self.w,self.h)
+	self.startCanvas = love.graphics.newCanvas(self.w,self.h)
 	if self.house then
 		local inlay = math.random(self.w/8,self.w/4)
 		local height = self.h*3/4
@@ -661,7 +679,8 @@ function Building:load()
 			end
 		end
 	end
-	love.graphics.setCanvas({self.canvas,stencil=true})
+	local colour = {love.graphics.getColor()}
+	love.graphics.setCanvas({self.startCanvas,stencil=true})
 		love.graphics.stencil(function () for i,o in pairs(self.features) do
 											love.graphics.polygon("fill",o.poly)
 										end end,
@@ -672,12 +691,30 @@ function Building:load()
 		love.graphics.rectangle("fill",0,0,self.w,self.h)
 
 		love.graphics.setStencilTest()
+	love.graphics.setCanvas(self.canvas)
+		love.graphics.setColor(1,1,1)
+		love.graphics.draw(self.startCanvas)
 	love.graphics.setCanvas()
+	love.graphics.setColor(colour)
+end
+
+function Building:update(dt)
+	if scene.player.x > self.x-scene.player.w then
+		if scene.player.x < self.x+scene.player.w+self.w then
+			love.graphics.setCanvas({self.canvas,stencil=true})
+				love.graphics.translate(-self.x,-self.y)
+				scene.player:draw()
+				love.graphics.origin()
+			love.graphics.setCanvas()
+		end
+	end
 end
 
 function Building:draw()
 	love.graphics.setColor(1,1,1)
+	love.graphics.setShader(mask_shader)
 	love.graphics.draw(self.canvas,self.x,self.y)
+	love.graphics.setShader()
 end
 
 function gradientMesh(dir, ...)
