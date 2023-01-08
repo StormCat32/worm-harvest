@@ -582,6 +582,8 @@ Building = {
 	features = {},
 	canvas = {},
 	startCanvas = {},
+	
+	type = 0,
 }
 
 function Building:new(x,w,h,sky,house)
@@ -614,6 +616,7 @@ function Building:load()
 	self.canvas = love.graphics.newCanvas(self.w,self.h)
 	self.startCanvas = love.graphics.newCanvas(self.w,self.h)
 	if self.house then
+		self.type = 1
 		local inlay = math.random(self.w/8,self.w/4)
 		local height = self.h*3/4
 		table.insert(self.features,{poly={0,self.h,0,self.h-height,inlay,self.h-height,inlay,self.h}})
@@ -623,12 +626,15 @@ function Building:load()
 	else
 		local featureType = math.random(1,10)
 		if featureType == 1 then
+			self.type = 2
 			local length = math.random(self.w/4,self.w/2)
 			table.insert(self.features,{poly={0,0,0,length,length,0}})
 		elseif featureType == 2 then
+			self.type = 2
 			local length = math.random(self.w/4,self.w/2)
 			table.insert(self.features,{poly={self.w,0,self.w,length,self.w-length,0}})
 		elseif featureType == 3 then
+			self.type = 3
 			local ww = math.random(self.w*1/3,self.w*2/3)
 			table.insert(self.features,{poly={self.w/2-ww/2,self.h/2+ww*0.866/2,self.w/2+ww/2,self.h/2+ww*0.866/2,self.w/2,self.h/2-ww*0.866/2}})
 		else
@@ -644,6 +650,7 @@ function Building:load()
 			if self.sky then
 				extraWindows = extraWindows + math.random(0,12)
 			end
+			self.type = extraWindows+4
 			while extraWindows > 0 do
 				local offx = math.random(-6,6)
 				local offy = math.random(-6,6)

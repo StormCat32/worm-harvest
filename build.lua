@@ -25,6 +25,9 @@ Build = {
 	pan4Timer = 2,
 	pan4TimerMax = 2,
 	
+	pan5Timer = 3,
+	pan5TimerMax = 3,
+	
 	buildSpeed = 400,
 	buildingTimer = 0,
 	buildingWaitTime = 0.2,
@@ -90,12 +93,13 @@ function Build:load(worm,buildings)
 	self.pan2Timer = self.pan2TimerMax
 	self.pan3Timer = self.pan3TimerMax
 	self.pan4Timer = self.pan4TimerMax
+	self.pan5Timer = self.pan5TimerMax
 	self.buildingTimer = 0
 end
 
 function Build:keypressed(key)
 	if self.pan2Timer <= 0 then
-		if not self.finished then
+		if not self.finished and not self.gameOver then
 			if key == "w" or key == "up" then
 				self:changeLayer(self.currentLayer-1)
 			end
@@ -149,7 +153,12 @@ function Build:keypressed(key)
 end
 
 function Build:update(dt)
-	if not self.animationStart then
+	if self.gameOver then
+		self.pan5Timer = self.pan5Timer - dt
+		if self.pan5Timer < 0 then
+			self.pan5Timer = 0
+		end
+	elseif not self.animationStart then
 		if self.worm.diry ~= 0 then
 			self.worm:buildUpdate(dt)
 		else
@@ -286,12 +295,31 @@ function Build:newBuilding()
 		end
 	end
 	
-	if not canPlace then
-		print("game over bud")
-		--end game, count points, the whole shebang
-	end
 	self.currentTimer = self.currentTimerMax
 	self:changeLayer(math.random(1,3))
+	
+	if not canPlace then
+		self.gameOver = true
+		self:changeLayer(3)
+		local count1 = 0 --houses (5 points)
+		local count2 = 0 --sheared buildings (10 points)
+		local count3 = 0 --traingles (15 points)
+		local count4 = 0 --windows (1 point)
+		local score = 0
+		for i,o in pairs(self.backBuildings) do
+			if o.type == 1 then
+				count1 = count1 + 1
+			elseif o.type == 2 then
+				count2 = count2 + 1
+			elseif o.type == 3 then
+				count3 = count3 + 1
+			else
+				count4 = count4 + o.type-3
+			end
+		end
+		score = 5*count1+10*count2+15*count3+count4
+		self.gameOverMessage = "Salvage City Score\nWindows - 1 x "..count4.."\nHouses - 5 x "..count1.."\nSheared Skyscrapers - 10 x "..count2.."\nTriangle Viewports - 15 x "..count3.."\n\nFinal Score - "..score
+	end
 end
 
 function Build:changeLayer(layer)
@@ -319,7 +347,9 @@ function Build:draw()
 	
 	local camOff = -self.worm.y+self.screenh/2
 	camOff = math.lerp(camOff,-self.panH,1-self.panTimer/self.panTimerMax)
-	if self.finished then
+	if self.gameOver then
+		camOff = math.lerp(0,self.screenh*1.4,1-self.pan5Timer/self.pan5TimerMax)
+	elseif self.finished then
 		camOff = math.lerp(0,self.screenh*2,1-self.pan3Timer/self.pan3TimerMax)
 	elseif self.animationDone then
 		camOff = math.lerp(-self.panH,0,1-self.pan2Timer/self.pan2TimerMax)
@@ -337,9 +367,11 @@ function Build:draw()
 	for i,o in pairs(self.backBackBuildings) do
 		o:buildDraw()
 	end
-	if self.pan2Timer <= 0 and not self.finished then
-		if self.currentLayer == 1 then
-			self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
+	if not self.gameOver then
+		if self.pan2Timer <= 0 and not self.finished then
+			if self.currentLayer == 1 then
+				self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
+			end
 		end
 	end
 	love.graphics.origin()
@@ -355,9 +387,11 @@ function Build:draw()
 			o:buildDraw()
 		end
 	end
-	if self.pan2Timer <= 0 and not self.finished then
-		if self.currentLayer == 2 then
-			self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
+	if not self.gameOver then
+		if self.pan2Timer <= 0 and not self.finished then
+			if self.currentLayer == 2 then
+				self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
+			end
 		end
 	end
 	love.graphics.origin()
@@ -372,9 +406,11 @@ function Build:draw()
 			o:buildDraw()
 		end
 	end
-	if self.pan2Timer <= 0 and not self.finished then
-		if self.currentLayer == 3 then
-			self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
+	if not self.gameOver then
+		if self.pan2Timer <= 0 and not self.finished then
+			if self.currentLayer == 3 then
+				self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
+			end
 		end
 	end
 	
@@ -382,6 +418,11 @@ function Build:draw()
 		for i,o in pairs(self.buildingList) do
 			o:buildDraw()
 		end
+	end
+	
+	if self.gameOver then
+		love.graphics.setColor(1/255,33/255,13/255)
+		love.graphics.print(self.gameOverMessage,64,-self.screenh*1.4+64)
 	end
 	
 	self.worm:buildDraw()
