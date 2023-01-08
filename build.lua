@@ -233,63 +233,59 @@ function Build:newBuilding()
 	self.currentBuilding = self.buildingList[1]
 	table.remove(self.buildingList,1)
 	local canPlace = false
-	for i,o in pairs(self.buildings) do
-		for j,p in pairs(self.buildings) do
-			if i ~= j then
-				if o.x+o.w+1+self.currentBuilding.w < self.w then
-					if not checkCollision(o.x+o.w+1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
-						canPlace = true
-						break
-					end
-				end
-			end
-		end
-	end
-	for i,o in pairs(self.backBuildings) do
-		for j,p in pairs(self.backBuildings) do
-			if i ~= j then
-				if o.x+o.w+1+self.currentBuilding.w < self.w then
-					if not checkCollision(o.x+o.w+1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
-						canPlace = true
-						break
-					end
-				end
-			end
-		end
-	end
-	for i,o in pairs(self.backBackBuildings) do
-		for j,p in pairs(self.backBackBuildings) do
-			if i ~= j then
-				if o.x+o.w+1+self.currentBuilding.w < self.w then
-					if not checkCollision(o.x+o.w+1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
-						canPlace = true
-						break
-					end
-				end
-			end
-		end
-	end
-	for j,p in pairs(self.backBackBuildings) do
-		if not checkCollision(1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
-			canPlace = true
-			break
-		end
-	end
-	for j,p in pairs(self.backBuildings) do
-		if not checkCollision(1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
-			canPlace = true
-			break
-		end
-	end
-	for j,p in pairs(self.buildings) do
-		if not checkCollision(1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
-			canPlace = true
-			break
-		end
-	end
-	if #self.buildings + #self.backBuildings + #self.backBackBuildings == 0 then
+	
+	local curX = 0
+	while curX + self.currentBuilding.w < self.w do
 		canPlace = true
+		for i,o in pairs(self.buildings) do
+			if checkCollision(curX,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,o.x,o.y,o.w,o.h) then
+				canPlace = false
+				break
+			end
+		end
+		if canPlace then
+			break
+		else
+			curX = curX + self.currentBuilding.w 
+		end
 	end
+	
+	if not canPlace then
+		curX = 0
+		while curX + self.currentBuilding.w < self.w do
+			canPlace = true
+			for i,o in pairs(self.backBuildings) do
+				if checkCollision(curX,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,o.x,o.y,o.w,o.h) then
+					canPlace = false
+					break
+				end
+			end
+			if canPlace then
+				break
+			else
+				curX = curX + self.currentBuilding.w 
+			end
+		end
+	end
+	
+	if not canPlace then
+		curX = 0
+		while curX + self.currentBuilding.w < self.w do
+			canPlace = true
+			for i,o in pairs(self.backBackBuildings) do
+				if checkCollision(curX,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,o.x,o.y,o.w,o.h) then
+					canPlace = false
+					break
+				end
+			end
+			if canPlace then
+				break
+			else
+				curX = curX + self.currentBuilding.w 
+			end
+		end
+	end
+	
 	if not canPlace then
 		print("game over bud")
 		--end game, count points, the whole shebang
