@@ -55,8 +55,8 @@ City = {
 	startTimer = 3,
 	startTimerMax = 3,
 	
-	winTimer = 5,
-	winTimerMax = 5,
+	winTimer = 2,
+	winTimerMax = 2,
 	
 	backGround = {},
 	
@@ -94,6 +94,8 @@ function City:load()
 	self.player = Worm:new()
 	self.player:load(0,self.h+50)
 	self.camera = Camera:new()
+	self.camera.x = self.player.x-self.camera.w/2
+	self.camera.y = self.h-self.camera.h-2000*self.startTimer/self.startTimerMax
 	local buildPos = math.random(self.player.w+1,self.sBuildDif)
 	while buildPos < self.w - self.sBuildWmax do
 		if buildPos < self.w/3 or buildPos > self.w*2/3 then
@@ -702,8 +704,11 @@ function Building:draw()
 	love.graphics.setShader()
 end
 
-function Building:buildDraw()
-	love.graphics.setColor(1,1,1)
+function Building:buildDraw(a)
+	if not a then
+		a = 1
+	end
+	love.graphics.setColor(1,1,1,a)
 	love.graphics.draw(self.canvas,self.x,self.y)
 end
 

@@ -20,6 +20,10 @@ Build = {
 	panH = 240,
 	pan2Timer = 1,
 	pan2TimerMax = 1,
+	pan3Timer = 3,
+	pan3TimerMax = 3,
+	pan4Timer = 2,
+	pan4TimerMax = 2,
 	
 	buildSpeed = 400,
 	buildingTimer = 0,
@@ -27,6 +31,8 @@ Build = {
 	
 	currentBuilding = {},
 	currentLayer = 2,
+	currentTimer = 0,
+	currentTimerMax = 0.5,
 }
 
 function Build:new()
@@ -48,6 +54,7 @@ end
 
 function Build:load(worm,buildings)
 	self.backGround = gradientMesh("vertical",{149/255,228/255,241/255},{224/255,255/255,255/255})
+	self.backGround2 = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
 	
 	self.worm = {}
 	self.worm = worm
@@ -78,32 +85,54 @@ function Build:load(worm,buildings)
 	self.animationStart = false
 	self.animationBegin = false
 	self.animationDone = false
+	self.finished = false
 	self.panTimer = self.panTimerMax
 	self.pan2Timer = self.pan2TimerMax
+	self.pan3Timer = self.pan3TimerMax
+	self.pan4Timer = self.pan4TimerMax
 end
 
 function Build:keypressed(key)
 	if self.pan2Timer <= 0 then
-		if key == "w" or key == "up" then
-			self:changeLayer(self.currentLayer-1)
-		end
-		if key == "s" or key == "down" then
-			self:changeLayer(self.currentLayer+1)
-		end
-		if key == "space" or key == "return" then
-			if self.currentLayer == 1 then
-				table.insert(self.backBackBuildings,self.currentBuilding)
-			elseif self.currentLayer == 2 then
-				table.insert(self.backBuildings,self.currentBuilding)
-			elseif self.currentLayer == 3 then
-				table.insert(self.buildings,self.currentBuilding)
+		if not self.finished then
+			if key == "w" or key == "up" then
+				self:changeLayer(self.currentLayer-1)
 			end
-			if #self.buildingList > 0 then
-				self.currentBuilding = self.buildingList[1]
-				self:changeLayer(self.currentLayer)
-				table.remove(self.buildingList,1)
-			else
-				self.finished = true
+			if key == "s" or key == "down" then
+				self:changeLayer(self.currentLayer+1)
+			end
+			if key == "space" or key == "return" then
+				if self.currentLayer == 1 then
+					table.insert(self.backBackBuildings,self.currentBuilding)
+					if #self.buildingList > 0 then
+						self.currentBuilding = self.buildingList[1]
+						table.remove(self.buildingList,1)
+						self.currentTimer = self.currentTimerMax
+						self:changeLayer(self.currentLayer)
+					else
+						self.finished = true
+					end
+				elseif self.currentLayer == 2 then
+					table.insert(self.backBuildings,self.currentBuilding)
+					if #self.buildingList > 0 then
+						self.currentBuilding = self.buildingList[1]
+						table.remove(self.buildingList,1)
+						self.currentTimer = self.currentTimerMax
+						self:changeLayer(self.currentLayer)
+					else
+						self.finished = true
+					end
+				elseif self.currentLayer == 3 then
+					table.insert(self.buildings,self.currentBuilding)
+					if #self.buildingList > 0 then
+						self.currentBuilding = self.buildingList[1]
+						self.currentTimer = self.currentTimerMax
+						table.remove(self.buildingList,1)
+						self:changeLayer(self.currentLayer)
+					else
+						self.finished = true
+					end
+				end
 			end
 		end
 	end
@@ -153,16 +182,32 @@ function Build:update(dt)
 		self.pan2Timer = self.pan2Timer - dt
 		if self.pan2Timer <= 0 then
 			self.pan2Timer = 0
-			for i,o in pairs(self.buildingList) do
-				o.x = self.w/2-o.w/2
-				o.y = self.y-o.h
+			if #self.buildingList > 0 then
+				for i,o in pairs(self.buildingList) do
+					o.x = math.random(10,self.w-o.w-10)
+					o.y = self.y-o.h
+				end
+				self.currentBuilding = self.buildingList[1]
+				table.remove(self.buildingList,1)
+				self.currentTimer = self.currentTimerMax
+				self:changeLayer(2)
+			else
+				self.finished = true
 			end
-			self.currentBuilding = self.buildingList[1]
-			self:changeLayer(2)
 		end
 	elseif self.finished then
-		
+		self.pan3Timer = self.pan3Timer-dt
+		if self.pan3Timer <= 0 then
+			self.pan3Timer = 0
+			self.pan4Timer = self.pan4Timer-dt
+			if self.pan4Timer <= 0 then
+				scene = City:new()
+				scene:load()
+			end
+		end
+		--transition screens somehow
 	else
+		self.currentTimer = self.currentTimer - dt
 		if love.keyboard.isDown("left","a") then
 			self.currentBuilding.x = self.currentBuilding.x-self.buildSpeed*dt
 		end
@@ -195,14 +240,23 @@ function Build:changeLayer(layer)
 end
 
 function Build:draw()
-	love.graphics.setColor(1,1,1)
+	love.graphics.setColor(1,1,1,self.pan4Timer/self.pan4TimerMax)
 	love.graphics.draw(self.backGround,0,0,0,self.screenw,self.screenh)
+	love.graphics.setColor(1,1,1,1-self.pan4Timer/self.pan4TimerMax)
+	love.graphics.draw(self.backGround2,0,0,0,self.screenw,self.screenh)
 	
 	local camOff = -self.worm.y+self.screenh/2
 	camOff = math.lerp(camOff,-self.panH,1-self.panTimer/self.panTimerMax)
-	if self.animationDone then
+	if self.finished then
+		camOff = math.lerp(0,self.screenh*2,1-self.pan3Timer/self.pan3TimerMax)
+	elseif self.animationDone then
 		camOff = math.lerp(-self.panH,0,1-self.pan2Timer/self.pan2TimerMax)
 	end
+	
+	love.graphics.translate(0,math.floor(camOff/2))
+	love.graphics.setColor(224/255,255/255,255/255)
+	love.graphics.circle("fill",self.w*2/3,self.screenh/3,self.w/16)
+	love.graphics.origin()
 	
 	love.graphics.translate(self.w/8,math.floor(camOff*3/4))
 	love.graphics.scale(3/4,3/4)
@@ -213,7 +267,7 @@ function Build:draw()
 	end
 	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 1 then
-			self.currentBuilding:buildDraw()
+			self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
 		end
 	end
 	love.graphics.origin()
@@ -227,7 +281,7 @@ function Build:draw()
 	end
 	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 2 then
-			self.currentBuilding:buildDraw()
+			self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
 		end
 	end
 	love.graphics.origin()
@@ -240,7 +294,7 @@ function Build:draw()
 	end
 	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 3 then
-			self.currentBuilding:buildDraw()
+			self.currentBuilding:buildDraw(1-self.currentTimer/self.currentTimerMax)
 		end
 	end
 	
