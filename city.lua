@@ -88,7 +88,7 @@ end
 function City:load()
 	self.backGround = gradientMesh("vertical",{254/255,157/255,0/255},{254/255,223/255,96/255})
 
-	self.endTimer = 5
+	self.endTimer = self.endTimerMax
 	self.startTimer = self.startTimerMax
 	
 	self.player = Worm:new()

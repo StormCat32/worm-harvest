@@ -90,6 +90,7 @@ function Build:load(worm,buildings)
 	self.pan2Timer = self.pan2TimerMax
 	self.pan3Timer = self.pan3TimerMax
 	self.pan4Timer = self.pan4TimerMax
+	self.buildingTimer = 0
 end
 
 function Build:keypressed(key)
@@ -103,34 +104,43 @@ function Build:keypressed(key)
 			end
 			if key == "space" or key == "return" then
 				if self.currentLayer == 1 then
+					for i,o in pairs(self.backBackBuildings) do
+						if checkCollision(o.x,o.y,o.w,o.h,self.currentBuilding.x,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h) then
+							return
+						end
+					end
 					table.insert(self.backBackBuildings,self.currentBuilding)
 					if #self.buildingList > 0 then
-						self.currentBuilding = self.buildingList[1]
-						table.remove(self.buildingList,1)
-						self.currentTimer = self.currentTimerMax
-						self:changeLayer(math.random(1,3))
+						self:newBuilding()
 					else
 						self.finished = true
+						self.currentLayer = 3
 					end
 				elseif self.currentLayer == 2 then
+					for i,o in pairs(self.backBuildings) do
+						if checkCollision(o.x,o.y,o.w,o.h,self.currentBuilding.x,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h) then
+							return
+						end
+					end
 					table.insert(self.backBuildings,self.currentBuilding)
 					if #self.buildingList > 0 then
-						self.currentBuilding = self.buildingList[1]
-						table.remove(self.buildingList,1)
-						self.currentTimer = self.currentTimerMax
-						self:changeLayer(math.random(1,3))
+						self:newBuilding()
 					else
 						self.finished = true
+						self.currentLayer = 3
 					end
 				elseif self.currentLayer == 3 then
+					for i,o in pairs(self.buildings) do
+						if checkCollision(o.x,o.y,o.w,o.h,self.currentBuilding.x,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h) then
+							return
+						end
+					end
 					table.insert(self.buildings,self.currentBuilding)
 					if #self.buildingList > 0 then
-						self.currentBuilding = self.buildingList[1]
-						self.currentTimer = self.currentTimerMax
-						table.remove(self.buildingList,1)
-						self:changeLayer(math.random(1,3))
+						self:newBuilding()
 					else
 						self.finished = true
+						self.currentLayer = 3
 					end
 				end
 			end
@@ -187,12 +197,10 @@ function Build:update(dt)
 					o.x = math.random(10,self.w-o.w-10)
 					o.y = self.y-o.h
 				end
-				self.currentBuilding = self.buildingList[1]
-				table.remove(self.buildingList,1)
-				self.currentTimer = self.currentTimerMax
-				self:changeLayer(2)
+				self:newBuilding()
 			else
 				self.finished = true
+				self.currentLayer = 3
 			end
 		end
 	elseif self.finished then
@@ -205,7 +213,6 @@ function Build:update(dt)
 				scene:load()
 			end
 		end
-		--transition screens somehow
 	else
 		self.currentTimer = self.currentTimer - dt
 		if love.keyboard.isDown("left","a") then
@@ -220,6 +227,75 @@ function Build:update(dt)
 			self.currentBuilding.x = self.w-self.currentBuilding.w
 		end
 	end
+end
+
+function Build:newBuilding()
+	self.currentBuilding = self.buildingList[1]
+	table.remove(self.buildingList,1)
+	local canPlace = false
+	for i,o in pairs(self.buildings) do
+		for j,p in pairs(self.buildings) do
+			if i ~= j then
+				if o.x+o.w+1+self.currentBuilding.w < self.w then
+					if not checkCollision(o.x+o.w+1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
+						canPlace = true
+						break
+					end
+				end
+			end
+		end
+	end
+	for i,o in pairs(self.backBuildings) do
+		for j,p in pairs(self.backBuildings) do
+			if i ~= j then
+				if o.x+o.w+1+self.currentBuilding.w < self.w then
+					if not checkCollision(o.x+o.w+1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
+						canPlace = true
+						break
+					end
+				end
+			end
+		end
+	end
+	for i,o in pairs(self.backBackBuildings) do
+		for j,p in pairs(self.backBackBuildings) do
+			if i ~= j then
+				if o.x+o.w+1+self.currentBuilding.w < self.w then
+					if not checkCollision(o.x+o.w+1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
+						canPlace = true
+						break
+					end
+				end
+			end
+		end
+	end
+	for j,p in pairs(self.backBackBuildings) do
+		if not checkCollision(1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
+			canPlace = true
+			break
+		end
+	end
+	for j,p in pairs(self.backBuildings) do
+		if not checkCollision(1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
+			canPlace = true
+			break
+		end
+	end
+	for j,p in pairs(self.buildings) do
+		if not checkCollision(1,self.currentBuilding.y,self.currentBuilding.w,self.currentBuilding.h,p.x,p.y,p.w,p.h) then
+			canPlace = true
+			break
+		end
+	end
+	if #self.buildings + #self.backBuildings + #self.backBackBuildings == 0 then
+		canPlace = true
+	end
+	if not canPlace then
+		print("game over bud")
+		--end game, count points, the whole shebang
+	end
+	self.currentTimer = self.currentTimerMax
+	self:changeLayer(math.random(1,3))
 end
 
 function Build:changeLayer(layer)
@@ -277,7 +353,11 @@ function Build:draw()
 	love.graphics.setColor(27/255,110/255,85/255)
 	love.graphics.rectangle("fill",-self.w/2,self.y,self.w*2,self.h*20)
 	for i,o in pairs(self.backBuildings) do
-		o:buildDraw()
+		if self.currentLayer == 1 then
+			o:buildDraw(0.5)
+		else
+			o:buildDraw()
+		end
 	end
 	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 2 then
@@ -290,7 +370,11 @@ function Build:draw()
 	love.graphics.setColor(12/255,69/255,43/255)
 	love.graphics.rectangle("fill",-self.w/2,self.y,self.w*2,self.h*20)
 	for i,o in pairs(self.buildings) do
-		o:buildDraw()
+		if self.currentLayer < 3 then
+			o:buildDraw(0.5)
+		else
+			o:buildDraw()
+		end
 	end
 	if self.pan2Timer <= 0 and not self.finished then
 		if self.currentLayer == 3 then
