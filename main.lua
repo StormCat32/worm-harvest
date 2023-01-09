@@ -41,6 +41,10 @@ require "player"
 require "build"
 
 function love.load()
+	ambience = love.audio.newSource("ambience.mp3","static")
+	ambience:setLooping(true)
+	ambience:play()
+
 	love.graphics.setFont(love.graphics.newFont(48))
 	math.randomseed(os.time())
 	cityBuilding = Build:new()

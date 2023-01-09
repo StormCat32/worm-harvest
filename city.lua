@@ -61,8 +61,6 @@ City = {
 	backGround = {},
 	
 	maxPixelCount = 120,
-	
-	explodeSound = love.audio.newSource("explode.wav","static"),
 }
 
 function City:new()
@@ -487,7 +485,6 @@ function City:drawForegrounds()
 end
 
 function City:explodeBomb(x,y,r,layer)
-	self.explodeSound:play()
 	if layer == 1 then
 		table.insert(self.explode,Explosion:new(x,y,r))
 		if checkCircleCollision(x,y,r,self.player.x,self.player.y,1) then
