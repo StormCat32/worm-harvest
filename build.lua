@@ -329,7 +329,7 @@ function Build:newBuilding()
 			end
 		end
 		score = 5*count1+10*count2+15*count3+count4-10*self.deathCount
-		self.gameOverMessage = "Salvage City Score\nWindows: "..count4.." x 1\nHouses: "..count1.." x 5\nSheared Skyscrapers: "..count2.." x 10\nTriangle Viewports: "..count3.." x 15\nDeaths: "..self.deathCount.." x -10\n\nFinal Score: "..score
+		self.gameOverMessage = "the city is rebuilt\n\nthe worms shall repair the world \nfrom the rubble of the old\n\nyou scored "..score
 	end
 end
 

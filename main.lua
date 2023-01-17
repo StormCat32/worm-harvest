@@ -41,7 +41,7 @@ require "player"
 require "build"
 
 function love.load()
-	love.graphics.setFont(love.graphics.newFont(48))
+	love.graphics.setFont(love.graphics.newFont("AVA.ttf",48))
 	math.randomseed(os.time())
 	cityBuilding = Build:new()
 	scene = City:new()
