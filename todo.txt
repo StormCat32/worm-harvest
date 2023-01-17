@@ -1,0 +1,7 @@
+todo:
+-make better sound (and some music)
+-make explosions eat buildings but not count for placing
+-make title screen/instructions somewhere
+-make transition to free camera after city smoother
+-make better title art
+-write better description

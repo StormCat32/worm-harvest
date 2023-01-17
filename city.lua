@@ -285,7 +285,7 @@ function City:drawBackgrounds()
 	love.graphics.translate(-math.floor(self.camera.x*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
 	
-	love.graphics.stencil(function () for i,o in pairs(self.backBackExplode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.backBackExplode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(212/255,109/255,20/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -306,7 +306,7 @@ function City:drawBackgrounds()
 	love.graphics.translate(-math.floor((self.camera.x-self.w)*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
 	
-	love.graphics.stencil(function () for i,o in pairs(self.backBackExplode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.backBackExplode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(212/255,109/255,20/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -327,7 +327,7 @@ function City:drawBackgrounds()
 	love.graphics.translate(-math.floor((self.camera.x+self.w)*3/4),-math.floor(self.camera.y*3/4))
 	love.graphics.scale(3/4,3/4)
 	
-	love.graphics.stencil(function () for i,o in pairs(self.backBackExplode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.backBackExplode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(212/255,109/255,20/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -348,7 +348,7 @@ function City:drawBackgrounds()
 	love.graphics.translate(-math.floor(self.camera.x*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
 	
-	love.graphics.stencil(function () for i,o in pairs(self.backExplode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.backExplode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(170/255,77/255,20/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -369,7 +369,7 @@ function City:drawBackgrounds()
 	love.graphics.translate(-math.floor((self.camera.x-self.w)*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
 	
-	love.graphics.stencil(function () for i,o in pairs(self.backExplode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.backExplode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(170/255,77/255,20/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -390,7 +390,7 @@ function City:drawBackgrounds()
 	love.graphics.translate(-math.floor((self.camera.x+self.w)*5/6),-math.floor(self.camera.y*5/6))
 	love.graphics.scale(5/6,5/6)
 	
-	love.graphics.stencil(function () for i,o in pairs(self.backExplode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.backExplode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(170/255,77/255,20/255)
 	love.graphics.rectangle("fill",0,self.y,self.w,self.h-self.y)
@@ -412,7 +412,7 @@ end
 function City:drawForegrounds()
 	love.graphics.translate(-math.floor(self.camera.x),-math.floor(self.camera.y))
 	
-	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
 	if self.won then
@@ -435,7 +435,7 @@ function City:drawForegrounds()
 	
 	love.graphics.translate(-math.floor(self.camera.x-self.w),-math.floor(self.camera.y))
 	
-	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
 	if self.won then
@@ -458,7 +458,7 @@ function City:drawForegrounds()
 	
 	love.graphics.translate(-math.floor(self.camera.x+self.w),-math.floor(self.camera.y))
 	
-	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw() end end, "replace", 1)
+	love.graphics.stencil(function () for i,o in pairs(self.explode) do o:eatDraw(self.w) end end, "replace", 1)
 	love.graphics.setStencilTest("less", 1)
 	love.graphics.setColor(83/255,27/255,2/255)
 	if self.won then
@@ -494,7 +494,15 @@ function City:explodeBomb(x,y,r,layer)
 		for i,o in pairs(self.backBuildings) do
 			love.graphics.setCanvas({o.canvas,stencil=true})
 				love.graphics.translate(-o.x,-o.y)
-				love.graphics.setColor(0,1,0)
+				love.graphics.setColor(0,0,0)
+				love.graphics.circle("fill",x,y,r)
+				love.graphics.origin()
+				
+				love.graphics.translate(-o.x+self.w,-o.y)
+				love.graphics.circle("fill",x,y,r)
+				love.graphics.origin()
+				
+				love.graphics.translate(-o.x-self.w,-o.y)
 				love.graphics.circle("fill",x,y,r)
 				love.graphics.origin()
 			love.graphics.setCanvas()
@@ -504,7 +512,15 @@ function City:explodeBomb(x,y,r,layer)
 		for i,o in pairs(self.backBackBuildings) do
 			love.graphics.setCanvas({o.canvas,stencil=true})
 				love.graphics.translate(-o.x,-o.y)
-				love.graphics.setColor(0,1,0)
+				love.graphics.setColor(0,0,0)
+				love.graphics.circle("fill",x,y,r)
+				love.graphics.origin()
+				
+				love.graphics.translate(-o.x+self.w,-o.y)
+				love.graphics.circle("fill",x,y,r)
+				love.graphics.origin()
+				
+				love.graphics.translate(-o.x-self.w,-o.y)
 				love.graphics.circle("fill",x,y,r)
 				love.graphics.origin()
 			love.graphics.setCanvas()
@@ -816,7 +832,16 @@ function Explosion:draw()
 	end
 end
 
-function Explosion:eatDraw()
+function Explosion:eatDraw(worldw)
 	love.graphics.setColor(0,0,0)
 	love.graphics.circle("fill",self.x,self.y,self.r)
+	love.graphics.translate(-worldw,0)
+	
+	love.graphics.setColor(0,0,0)
+	love.graphics.circle("fill",self.x,self.y,self.r)
+	love.graphics.translate(worldw*2,0)
+	
+	love.graphics.setColor(0,0,0)
+	love.graphics.circle("fill",self.x,self.y,self.r)
+	love.graphics.translate(-worldw,0)
 end

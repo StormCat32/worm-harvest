@@ -39,9 +39,9 @@ Build = {
 	
 	deathCount = 0,
 	
-	placeSound = love.audio.newSource("place.wav","static"),
-	blockedSound = love.audio.newSource("block.wav","static"),
-	moveSound = love.audio.newSource("move.wav","static"),
+	placeSound = love.audio.newSource("sound/place.wav","static"),
+	blockedSound = love.audio.newSource("sound/block.wav","static"),
+	moveSound = love.audio.newSource("sound/move.wav","static"),
 }
 
 function Build:new()
