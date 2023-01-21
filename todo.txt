@@ -4,3 +4,5 @@ todo:
 -make title screen/instructions somewhere
 -make transition to free camera after city smoother
 -write better description
+-fix score system
+-find better font (for real)

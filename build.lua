@@ -314,8 +314,8 @@ function Build:newBuilding()
 		self:changeLayer(3)
 		local count1 = 0 --houses (5 points)
 		local count2 = 0 --sheared buildings (10 points)
-		local count3 = 0 --traingles (15 points)
-		local count4 = 0 --windows (1 point)
+		local count3 = 0 --triangles (15 points)
+		local count4 = 0 --windows (3 point)
 		local score = 0
 		for i,o in pairs(self.backBuildings) do
 			if o.type == 1 then
